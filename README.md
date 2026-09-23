@@ -8,15 +8,36 @@
 - 支持 iOS、macOS、watchOS、tvOS、visionOS 五大平台
 - 网络失败自动重试（3次）
 - 检测到新版本自动创建 GitHub Issue 通知
+- 支持 Telegram Bot 推送通知
 - 保留历史版本记录
 
 ## 更新状态
 
 查看 [UPDATE_STATUS.md](./UPDATE_STATUS.md) 获取最新检查结果。
 
-## Issue 通知
+## 通知方式
+
+### GitHub Issue
 
 检测到新版本时会自动创建带有 `apple-update` 标签的 Issue。在仓库 → Issues → Labels → `apple-update` 可查看所有更新通知。
+
+### Telegram Bot
+
+检测到新版本时会同时通过 Telegram Bot 推送通知。
+
+**配置步骤：**
+
+1. 与 [@BotFather](https://t.me/BotFather) 创建一个 Bot，获取 Token
+2. 获取你的 Chat ID（可以发消息给 [@userinfobot](https://t.me/userinfobot)）
+3. 在 GitHub 仓库 → Settings → Secrets and variables → Actions，添加：
+   - `TELEGRAM_BOT_TOKEN` — Bot 的 Token
+   - `TELEGRAM_CHAT_ID` — 你的 Chat ID
+
+本地测试：
+
+```bash
+TELEGRAM_BOT_TOKEN="your_token" TELEGRAM_CHAT_ID="your_chat_id" node scripts/check-updates.js
+```
 
 ## 数据文件
 
@@ -40,18 +61,12 @@
 
 在 GitHub 仓库 → Actions → "Check Apple Updates" → "Run workflow"
 
-## 本地运行
-
-```bash
-node scripts/check-updates.js
-```
-
 ## 项目结构
 
 ```
 apple-update-checker/
 ├── scripts/
-│   └── check-updates.js      # 检查脚本（含重试、变更检测）
+│   └── check-updates.js      # 检查脚本（含重试、变更检测、Telegram 通知）
 ├── .github/
 │   └── workflows/
 │       └── check-update.yml  # 定时任务 + Issue 通知

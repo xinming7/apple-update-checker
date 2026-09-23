@@ -169,6 +169,62 @@ function detectChanges(current, dataDir) {
   }
 }
 
+/**
+ * 通过 Telegram Bot 发送通知
+ */
+async function sendTelegramMessage(text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId) {
+    console.log('Telegram not configured, skipping notification.');
+    return;
+  }
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+  try {
+    const response = await fetchWithRetry(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML'
+      })
+    });
+    const result = await response.json();
+    if (result.ok) {
+      console.log('Telegram notification sent successfully.');
+    } else {
+      console.error('Telegram API error:', result.description);
+    }
+  } catch (err) {
+    console.error('Failed to send Telegram notification:', err.message);
+  }
+}
+
+/**
+ * 格式化新版本消息
+ */
+function formatTelegramMessage(newUpdates) {
+  let msg = `🍎 <b>Apple 系统更新通知</b>\n\n`;
+  msg += `检测到 <b>${newUpdates.length}</b> 个新版本：\n\n`;
+
+  for (const u of newUpdates) {
+    msg += `📱 <b>${u.platform}</b> ${u.version}`;
+    if (u.build) msg += ` (${u.build})`;
+    if (u.postingDate) {
+      const date = new Date(u.postingDate).toLocaleDateString('zh-CN');
+      msg += ` — ${date}`;
+    }
+    msg += `\n`;
+  }
+
+  msg += `\n查看详细信息: https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md`;
+  return msg;
+}
+
 async function main() {
   console.log('=== Apple Update Checker ===');
   console.log('Time:', new Date().toISOString());
@@ -227,13 +283,14 @@ async function main() {
     }
   }
 
-  // 输出新版本信息供 workflow 读取
+  // 输出新版本信息供 workflow 读取，并发送 Telegram 通知
   if (newUpdates && newUpdates.length > 0) {
     console.log('');
     console.log('=== NEW UPDATES DETECTED ===');
     for (const u of newUpdates) {
       console.log(`NEW: ${u.platform} ${u.version} (${u.build})`);
     }
+    await sendTelegramMessage(formatTelegramMessage(newUpdates));
   }
 }
 
