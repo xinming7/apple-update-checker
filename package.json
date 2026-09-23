@@ -1,16 +1,10 @@
 {
   "name": "apple-update-checker",
   "version": "1.0.0",
-  "description": "Check Apple system updates via Cloudflare Workers",
-  "main": "src/index.js",
+  "description": "Check Apple system updates via GitHub Actions",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "tail": "wrangler tail"
+    "check": "node scripts/check-updates.js"
   },
-  "keywords": ["apple", "ios", "macos", "update", "cloudflare-workers"],
-  "license": "MIT",
-  "devDependencies": {
-    "wrangler": "^3.0.0"
-  }
+  "keywords": ["apple", "ios", "macos", "update", "github-actions"],
+  "license": "MIT"
 }

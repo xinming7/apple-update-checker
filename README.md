@@ -1,85 +1,58 @@
 # Apple Update Checker
 
-基于 Cloudflare Workers 的 Apple 系统更新检查服务。
+通过 GitHub Actions 定时检查苹果系统更新（iOS、macOS、watchOS、tvOS），结果自动保存到仓库。
 
-## 功能特性
+## 工作原理
 
-- 检查 iOS、macOS、watchOS、tvOS 的最新更新
-- 提供 RESTful API 接口
-- 支持 CORS 跨域请求
-- 全球边缘节点部署，低延迟响应
+- GitHub Actions 每天北京时间 10:00 自动运行
+- 从 Apple OTA Feed 获取最新版本信息
+- 更新 `UPDATE_STATUS.md` 和 `data/updates.json`
+- 纯 GitHub 方案，无需额外服务
 
-## API 端点
+## 更新状态
 
-| 端点 | 说明 |
-|------|------|
-| `GET /api` | API 信息 |
-| `GET /api/updates/ios` | 获取 iOS 更新 |
-| `GET /api/updates/macos` | 获取 macOS 更新 |
-| `GET /api/updates/watchos` | 获取 watchOS 更新 |
-| `GET /api/updates/tvos` | 获取 tvOS 更新 |
-| `GET /api/updates/all` | 获取所有平台更新 |
+查看 [UPDATE_STATUS.md](./UPDATE_STATUS.md) 获取最新检查结果。
 
-## 响应示例
+## 数据文件
+
+`data/updates.json` 包含结构化数据，可用于其他项目：
 
 ```json
 {
-  "success": true,
-  "timestamp": "2026-09-23T09:48:27.000Z",
-  "count": 3,
-  "updates": [
-    {
-      "platform": "iOS",
-      "version": "19.0.1",
-      "build": "23A355",
-      "releaseType": "Release",
-      "postingDate": "2026-09-22T07:00:00Z",
-      "supportedDevices": ["iPhone16,1", "iPhone15,2"]
+  "lastChecked": "2026-09-23T02:00:00.000Z",
+  "platforms": {
+    "ios": {
+      "name": "iOS",
+      "updates": [
+        { "platform": "iOS", "version": "19.0.1", "build": "23A355", "postingDate": "2026-09-22T07:00:00Z" }
+      ]
     }
-  ]
+  }
 }
 ```
 
-## 部署
+## 手动触发
 
-### 前置要求
+在 GitHub 仓库 → Actions → "Check Apple Updates" → "Run workflow"
 
-1. Cloudflare 账号
-2. Node.js 18+
-3. Wrangler CLI
-
-### 本地开发
+## 本地运行
 
 ```bash
-npm install
-npm run dev
+node scripts/check-updates.js
 ```
-
-### 部署到 Cloudflare
-
-```bash
-npm run deploy
-```
-
-### GitHub Actions 自动部署
-
-1. 在 Cloudflare 获取 API Token 和 Account ID
-2. 在 GitHub 仓库设置中添加 Secrets:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-3. 推送到 `main` 分支即可自动部署
 
 ## 项目结构
 
 ```
 apple-update-checker/
-├── src/
-│   └── index.js          # Worker 主文件
-├── wrangler.toml         # Cloudflare Workers 配置
-├── package.json
+├── scripts/
+│   └── check-updates.js   # 检查脚本
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml    # GitHub Actions 配置
+│       └── check-update.yml  # 定时任务
+├── data/
+│   └── updates.json       # 更新数据（自动生成）
+├── UPDATE_STATUS.md       # 更新状态（自动生成）
 └── README.md
 ```
 

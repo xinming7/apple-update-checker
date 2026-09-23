@@ -1,0 +1,33 @@
+name: Check Apple Updates
+
+on:
+  schedule:
+    # 每天 UTC 02:00 检查（北京时间 10:00）
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 手动触发
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check updates
+        run: node scripts/check-updates.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update Apple system info [$(date +%Y-%m-%d)]"
+            git push
+          fi
