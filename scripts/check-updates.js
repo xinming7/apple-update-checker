@@ -22,37 +22,77 @@ const FEEDS = {
   tvos: {
     name: 'tvOS',
     url: 'https://mesu.apple.com/assets/com_apple_MobileAsset_TVSoftwareUpdate/com_apple_MobileAsset_TVSoftwareUpdate.xml'
+  },
+  visionos: {
+    name: 'visionOS',
+    url: 'https://mesu.apple.com/assets/com_apple_MobileAsset_VisionSoftwareUpdate/com_apple_MobileAsset_VisionSoftwareUpdate.xml'
   }
 };
+
+// 重试次数
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response;
+    } catch (err) {
+      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
+      if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
+      else throw err;
+    }
+  }
+}
 
 async function fetchFeed(platform) {
   const config = FEEDS[platform];
   console.log(`Fetching ${config.name} updates...`);
 
   try {
-    const response = await fetch(config.url, {
+    const response = await fetchWithRetry(config.url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
       }
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
     const xml = await response.text();
     return parseXML(xml, config.name);
   } catch (error) {
-    console.error(`Error fetching ${config.name}:`, error.message);
+    console.error(`Error fetching ${config.name}: ${error.message}`);
     return [];
   }
 }
 
+/**
+ * 解析 Apple OTA XML
+ * 结构：<dict> → <key>Assets</key> → <array> → <dict>（每个更新条目）
+ * 只提取 Assets 数组内的 dict，跳过外层
+ */
 function parseXML(xml, platformName) {
   const updates = [];
-  const assetBlocks = xml.match(/<dict>[\s\S]*?<\/dict>/g) || [];
 
-  for (const block of assetBlocks) {
+  // 找到 Assets 数组内容
+  const assetsMatch = xml.match(/<key>Assets<\/key>\s*<array>([\s\S]*?)<\/array>/);
+  if (!assetsMatch) {
+    console.warn(`  No Assets array found for ${platformName}`);
+    return [];
+  }
+
+  const assetsXml = assetsMatch[1];
+
+  // 匹配 Assets 内每个 <dict>...</dict> 块
+  const dictRegex = /<dict>([\s\S]*?)<\/dict>/g;
+  let match;
+
+  while ((match = dictRegex.exec(assetsXml)) !== null) {
+    const block = match[1];
     const update = { platform: platformName };
 
     const versionMatch = block.match(/<key>OSVersion<\/key>\s*<string>([^<]+)<\/string>/);
@@ -67,12 +107,16 @@ function parseXML(xml, platformName) {
     const sizeMatch = block.match(/<key>DownloadSize<\/key>\s*<integer>([^<]+)<\/integer>/);
     if (sizeMatch) update.downloadSize = parseInt(sizeMatch[1]);
 
+    // 提取文档标题（HumanReadableUpdateName 或 ProductVersionExtra）
+    const titleMatch = block.match(/<key>HumanReadableUpdateName<\/key>\s*<string>([^<]+)<\/string>/);
+    if (titleMatch) update.title = titleMatch[1];
+
     if (update.version) {
       updates.push(update);
     }
   }
 
-  // 去重并取最新3个
+  // 去重并取最新5个
   const unique = [];
   const seen = new Set();
   for (const u of updates) {
@@ -82,7 +126,47 @@ function parseXML(xml, platformName) {
       unique.push(u);
     }
   }
-  return unique.slice(0, 3);
+  return unique.slice(0, 5);
+}
+
+/**
+ * 读取上次检查数据，检测是否有新版本
+ */
+function detectChanges(current, dataDir) {
+  const prevFile = path.join(dataDir, 'updates.json');
+  if (!fs.existsSync(prevFile)) {
+    console.log('No previous data found, skipping change detection.');
+    return null;
+  }
+
+  try {
+    const prev = JSON.parse(fs.readFileSync(prevFile, 'utf-8'));
+    const newUpdates = [];
+
+    for (const [key, platform] of Object.entries(current.platforms)) {
+      const prevPlatform = prev.platforms?.[key];
+      if (!prevPlatform) {
+        // 新平台（如刚加 visionOS），整个平台都算新
+        for (const u of platform.updates) newUpdates.push(u);
+        continue;
+      }
+
+      const prevVersions = new Set(
+        prevPlatform.updates.map(u => `${u.version}-${u.build}`)
+      );
+
+      for (const u of platform.updates) {
+        if (!prevVersions.has(`${u.version}-${u.build}`)) {
+          newUpdates.push(u);
+        }
+      }
+    }
+
+    return newUpdates;
+  } catch (err) {
+    console.error('Error reading previous data:', err.message);
+    return null;
+  }
 }
 
 async function main() {
@@ -119,6 +203,9 @@ async function main() {
     fs.mkdirSync(dataDir, { recursive: true });
   }
 
+  // 检测变更
+  const newUpdates = detectChanges(output, dataDir);
+
   const outputFile = path.join(dataDir, 'updates.json');
   fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
   console.log(`Saved to ${outputFile}`);
@@ -137,6 +224,15 @@ async function main() {
       console.log(`${platform.name}: ${latest.version} (${latest.build})`);
     } else {
       console.log(`${platform.name}: No data`);
+    }
+  }
+
+  // 输出新版本信息供 workflow 读取
+  if (newUpdates && newUpdates.length > 0) {
+    console.log('');
+    console.log('=== NEW UPDATES DETECTED ===');
+    for (const u of newUpdates) {
+      console.log(`NEW: ${u.platform} ${u.version} (${u.build})`);
     }
   }
 }
