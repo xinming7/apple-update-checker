@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 // Daily Update Digest - 从 Update Hub 获取当日汇总，通过 Telegram 发送
 
-const HUB_URL = process.env.UPDATE_HUB_URL;
+const HUB_URL = (process.env.UPDATE_HUB_URL || '').replace(/\/+$/, '');
 const HUB_TOKEN = process.env.UPDATE_HUB_TOKEN;
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+function escapeHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 async function fetchDigest() {
   const res = await fetch(`${HUB_URL}/api/daily-digest`, {
@@ -28,11 +33,11 @@ function formatMessage(digest) {
   msg += '\n\n';
 
   for (const proj of digest.projects) {
-    msg += `${proj.icon} <b>${proj.label}</b> (${proj.count} 条)\n`;
+    msg += `${proj.icon} <b>${escapeHtml(proj.label)}</b> (${proj.count} 条)\n`;
     for (const u of proj.updates.slice(0, 5)) {
       const icon = u.status === 'changed' ? '🔵' : u.status === 'error' ? '🔴' : u.status === 'warning' ? '🟡' : '🟢';
-      msg += `  ${icon} ${u.title}`;
-      if (u.version) msg += ` <code>v${u.version}</code>`;
+      msg += `  ${icon} ${escapeHtml(u.title)}`;
+      if (u.version) msg += ` <code>v${escapeHtml(u.version)}</code>`;
       msg += '\n';
       if (u.diff_url) {
         msg += `    <a href="${u.diff_url}">查看详情</a>\n`;
