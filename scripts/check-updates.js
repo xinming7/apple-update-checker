@@ -225,6 +225,42 @@ function formatTelegramMessage(newUpdates) {
   return msg;
 }
 
+/**
+ * 同步到 Update Hub
+ */
+async function reportToUpdateHub(updates) {
+  const hubUrl = process.env.UPDATE_HUB_URL;
+  const hubToken = process.env.UPDATE_HUB_TOKEN;
+  if (!hubUrl || !hubToken) {
+    console.log('Update Hub not configured, skipping.');
+    return;
+  }
+  for (const u of updates) {
+    try {
+      const res = await fetch(`${hubUrl}/api/projects/ios-update-check/updates`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${hubToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: u.version,
+          title: `${u.platform} ${u.version} (${u.build})`,
+          body: u.postingDate
+            ? `发布日期: ${new Date(u.postingDate).toLocaleDateString('zh-CN')}`
+            : '',
+          status: 'changed',
+          extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize },
+        }),
+      });
+      const result = await res.json();
+      console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error}`);
+    } catch (err) {
+      console.error(`Update Hub report failed: ${err.message}`);
+    }
+  }
+}
+
 async function main() {
   console.log('=== Apple Update Checker ===');
   console.log('Time:', new Date().toISOString());
@@ -291,6 +327,8 @@ async function main() {
       console.log(`NEW: ${u.platform} ${u.version} (${u.build})`);
     }
     await sendTelegramMessage(formatTelegramMessage(newUpdates));
+    // 只在有新版本时同步到 Update Hub
+    await reportToUpdateHub(newUpdates);
   }
 }
 
