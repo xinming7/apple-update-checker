@@ -1,0 +1,25 @@
+{
+  "lastChecked": "2026-09-24T07:23:45.569Z",
+  "platforms": {
+    "ios": {
+      "name": "iOS",
+      "updates": []
+    },
+    "macos": {
+      "name": "macOS",
+      "updates": []
+    },
+    "watchos": {
+      "name": "watchOS",
+      "updates": []
+    },
+    "tvos": {
+      "name": "tvOS",
+      "updates": []
+    },
+    "visionos": {
+      "name": "visionOS",
+      "updates": []
+    }
+  }
+}
