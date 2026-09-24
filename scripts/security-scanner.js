@@ -176,8 +176,8 @@ function parseDetailPage(html) {
     }
   }
 
-  // 提取描述段落（影响说明）
-  const impactRegex = /Impact[:\s]*([^<]+)/gi;
+  // 提取描述段落（影响说明）— 只匹配紧跟版本信息或安全公告正文中的 Impact
+  const impactRegex = /(?:<li|<p|<td)[^>]*>[^<]*Impact[:\s]+([^<]+)/gi;
   let impactMatch;
   while ((impactMatch = impactRegex.exec(html)) !== null) {
     const desc = impactMatch[1].trim();
@@ -274,14 +274,11 @@ async function main() {
   for (let i = 0; i < recentEntries.length; i++) {
     const result = detailResults[i];
     if (result.status === 'fulfilled' && result.value) {
-      // CVE 数量从详情页获取后回填到匹配的 entry
       const detail = result.value;
-      const entry = recentEntries[i];
-      const matchedEntry = entries.find(e => e.url === entry.url);
-      if (matchedEntry) matchedEntry.cveCount = detail.cveCount;
-
+      // CVE 数量回填到原始 entries 列表中
+      entries[i].cveCount = detail.cveCount;
       details.push({
-        ...entry,
+        ...recentEntries[i],
         ...detail
       });
     }

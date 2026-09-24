@@ -131,8 +131,8 @@ async function fetchXProtectVersion() {
           AudienceID: '00000000-0000-0000-0000-000000000000',
           ProductType: 'Mac',
           HWModelStr: 'J137AP',
-          ProductVersion: '14.5',
-          Build: '23F79'
+          ProductVersion: '15.6',
+          Build: '24G84'
         })
       }
     );
@@ -146,7 +146,9 @@ async function fetchXProtectVersion() {
 
     if (versionMatch) {
       const version = versionMatch[1];
-      const dateStr = `${version.slice(0, 4)}-${version.slice(4, 6)}-${version.slice(6, 8) || '01'}`;
+      const month = version.slice(4, 6);
+      const day = version.length >= 8 ? version.slice(6, 8) : '01';
+      const dateStr = `${version.slice(0, 4)}-${month}-${day}`;
       console.log(`  XProtect version: ${version} (${dateStr})`);
       return { version, date: dateStr };
     }
@@ -178,8 +180,6 @@ async function checkXProtectUpdate(dataDir) {
   }
 
   // 保存当前版本
-  const xpDir = dataDir;
-  if (!fs.existsSync(xpDir)) fs.mkdirSync(xpDir, { recursive: true });
   fs.writeFileSync(prevFile, JSON.stringify({ version: xp.version, date: xp.date, checkedAt: new Date().toISOString() }, null, 2));
 
   // 检测变更

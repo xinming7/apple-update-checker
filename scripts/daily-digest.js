@@ -54,6 +54,11 @@ function formatMessage(digest) {
 }
 
 async function sendTelegram(text) {
+  // Telegram 消息长度限制 4096 字符
+  const MAX_LEN = 4000;
+  if (text.length > MAX_LEN) {
+    text = text.slice(0, MAX_LEN - 30) + '\n\n... (内容过长已截断)';
+  }
   const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
