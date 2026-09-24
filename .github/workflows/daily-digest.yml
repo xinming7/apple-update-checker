@@ -10,105 +10,14 @@ jobs:
   digest:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Send daily digest via Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           UPDATE_HUB_URL: ${{ secrets.UPDATE_HUB_URL }}
           UPDATE_HUB_TOKEN: ${{ secrets.UPDATE_HUB_TOKEN }}
-        run: |
-          node -e "
-          const https = require('https');
-          const http = require('http');
-
-          async function run() {
-            const hubUrl = process.env.UPDATE_HUB_URL;
-            const hubToken = process.env.UPDATE_HUB_TOKEN;
-            const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-            const chatId = process.env.TELEGRAM_CHAT_ID;
-
-            if (!hubUrl || !hubToken) {
-              console.log('Update Hub not configured, skip.');
-              return;
-            }
-            if (!tgToken || !chatId) {
-              console.log('Telegram not configured, skip.');
-              return;
-            }
-
-            // 1. 获取日汇总
-            const digest = await fetch(hubUrl + '/api/daily-digest', {
-              headers: { 'Authorization': 'Bearer ' + hubToken }
-            }).then(r => r.json());
-
-            if (!digest.total) {
-              console.log('No updates today, sending quiet notice.');
-              const msg = '📋 <b>Update Hub 每日汇总</b>\n\n' +
-                '📅 ' + digest.date.slice(0, 10) + '\n\n' +
-                '今天暂无新更新。';
-              await sendTelegram(msg, tgToken, chatId);
-              return;
-            }
-
-            // 2. 构建消息
-            const date = digest.date.slice(0, 10);
-            let msg = '📋 <b>Update Hub 每日汇总</b>\n\n';
-            msg += '📅 ' + date + '\n';
-            msg += '📊 共 <b>' + digest.total + '</b> 条更新';
-            const parts = [];
-            if (digest.stats.changed) parts.push('🔵 ' + digest.stats.changed + ' 变更');
-            if (digest.stats.errors) parts.push('🔴 ' + digest.stats.errors + ' 异常');
-            if (digest.stats.ok) parts.push('🟢 ' + digest.stats.ok + ' 正常');
-            if (parts.length) msg += ' · ' + parts.join(' · ');
-            msg += '\n\n';
-
-            for (const proj of digest.projects) {
-              msg += proj.icon + ' <b>' + proj.label + '</b> (' + proj.count + ' 条)\n';
-              for (const u of proj.updates.slice(0, 5)) {
-                const icon = u.status === 'changed' ? '🔵' : u.status === 'error' ? '🔴' : u.status === 'warning' ? '🟡' : '🟢';
-                msg += '  ' + icon + ' ' + u.title;
-                if (u.version) msg += ' <code>v' + u.version + '</code>';
-                msg += '\n';
-                if (u.diff_url) {
-                  msg += '    <a href=\"' + u.diff_url + '\">查看详情</a>\n';
-                }
-              }
-              if (proj.updates.length > 5) {
-                msg += '  ... 还有 ' + (proj.updates.length - 5) + ' 条\n';
-              }
-              msg += '\n';
-            }
-
-            msg += '🔗 <a href=\"' + hubUrl + '/\">打开仪表盘</a>';
-
-            // 3. 发送
-            await sendTelegram(msg, tgToken, chatId);
-          }
-
-          function sendTelegram(text, token, chatId) {
-            return new Promise((resolve, reject) => {
-              const body = JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true });
-              const req = https.request('https://api.telegram.org/bot' + token + '/sendMessage', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-              }, (res) => {
-                let data = '';
-                res.on('data', d => data += d);
-                res.on('end', () => {
-                  const r = JSON.parse(data);
-                  if (r.ok) {
-                    console.log('Telegram sent successfully.');
-                  } else {
-                    console.error('Telegram error:', r.description);
-                  }
-                  resolve(r);
-                });
-              });
-              req.on('error', reject);
-              req.write(body);
-              req.end();
-            });
-          }
-
-          run().catch(e => { console.error(e); process.exit(1); });
-          "
+        run: node scripts/daily-digest.js
