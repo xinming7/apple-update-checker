@@ -85,9 +85,8 @@ function parseSecurityPage(html) {
     else if (/Safari/i.test(title)) platform = 'Safari';
     else if (/Xcode/i.test(title)) platform = 'Xcode';
 
-    // 提取 CVE 数量
-    const cveMatches = title.match(/CVE/gi);
-    const cveCount = cveMatches ? cveMatches.length : 0;
+    // CVE 数量需从详情页获取，标题中一般不含 CVE
+    const cveCount = 0;
 
     const fullUrl = href.startsWith('http') ? href : `https://support.apple.com${href}`;
 
@@ -265,13 +264,22 @@ async function main() {
     return;
   }
 
-  // 获取最近 3 个条目的详细信息
+  // 获取最近 3 个条目的详细信息（并行请求）
   const recentEntries = entries.slice(0, 3);
-  const details = [];
+  const detailResults = await Promise.allSettled(
+    recentEntries.map(entry => fetchSecurityDetail(entry.url))
+  );
 
-  for (const entry of recentEntries) {
-    const detail = await fetchSecurityDetail(entry.url);
-    if (detail) {
+  const details = [];
+  for (let i = 0; i < recentEntries.length; i++) {
+    const result = detailResults[i];
+    if (result.status === 'fulfilled' && result.value) {
+      // CVE 数量从详情页获取后回填到匹配的 entry
+      const detail = result.value;
+      const entry = recentEntries[i];
+      const matchedEntry = entries.find(e => e.url === entry.url);
+      if (matchedEntry) matchedEntry.cveCount = detail.cveCount;
+
       details.push({
         ...entry,
         ...detail

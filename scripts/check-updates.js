@@ -69,7 +69,8 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
  */
 function classifyUpdate(version, build, title) {
   if (title && /Rapid Security Response/i.test(title)) return 'security-response';
-  if (build && /[a-z]$/i.test(build) && !build.endsWith('a')) return 'security-response';
+  // RSR build 以小写字母结尾，排除 beta 后缀（如 23B5046f）
+  if (build && /[a-z]$/.test(build)) return 'security-response';
   if (version) {
     const parts = version.split('.');
     if (parts.length === 1) return 'major';
@@ -105,12 +106,6 @@ function generateFirmwareUrls(update) {
     urls.ipswme = `https://ipsw.me/download/iPhone/${update.version}`;
   } else if (update.platform === 'macOS' && update.version) {
     urls.ipswme = `https://ipsw.me/download/mac/${update.version}`;
-  }
-
-  // Apple 官方安全更新页面
-  if (update.version) {
-    const slug = update.version.replace(/\./g, '_');
-    urls.securityNote = `https://support.apple.com/en-us/100100`;
   }
 
   return urls;
@@ -177,7 +172,9 @@ async function checkXProtectUpdate(dataDir) {
   if (fs.existsSync(prevFile)) {
     try {
       prevVersion = JSON.parse(fs.readFileSync(prevFile, 'utf-8')).version;
-    } catch {}
+    } catch (err) {
+      console.warn(`  Failed to parse xprotect.json: ${err.message}`);
+    }
   }
 
   // 保存当前版本
@@ -457,6 +454,11 @@ function formatTelegramMessage(newUpdates, intervalStats) {
     }
   }
 
+  // Telegram 消息长度限制 4096 字符，超出则截断
+  const MAX_TG_LEN = 4000;
+  if (msg.length > MAX_TG_LEN) {
+    msg = msg.slice(0, MAX_TG_LEN - 30) + '\n\n... (内容过长已截断)';
+  }
   msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>`;
   return msg;
 }
@@ -513,9 +515,15 @@ async function main() {
   }
   console.log('');
 
+  // 确保 data 目录存在（XProtect 和主流程都需要）
+  const dataDir = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+
   // 并行获取所有平台 + XProtect
   const fetchTasks = Object.keys(FEEDS).map(platform => fetchFeed(platform));
-  const xpTask = checkXProtectUpdate(path.join(__dirname, '..', 'data'));
+  const xpTask = checkXProtectUpdate(dataDir);
 
   const results = await Promise.allSettled([...fetchTasks, xpTask]);
 
@@ -547,12 +555,6 @@ async function main() {
       date: xpResult.value.date,
       lastChecked: new Date().toISOString()
     };
-  }
-
-  // 保存到 data 目录
-  const dataDir = path.join(__dirname, '..', 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
   }
 
   // 检测变更
