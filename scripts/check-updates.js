@@ -462,7 +462,7 @@ function formatTelegramMessage(newUpdates, intervalStats) {
   msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
 
   // 标签
-  const tags = new Set(['#苹果系统更新']);
+  const tags = new Set(['#苹果系统更新', '#更新同步平台']);
   for (const u of newUpdates) {
     if (u.platform) tags.add(`#${u.platform}更新`);
     if (u._updateType === 'security-response') tags.add('#安全响应');

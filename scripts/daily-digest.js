@@ -52,7 +52,7 @@ function formatMessage(digest) {
   msg += `🔗 <a href="${HUB_URL}/">打开仪表盘</a>\n\n`;
 
   // 标签
-  msg += `#每日汇总 #UpdateHub`;
+  msg += `#每日汇总 #UpdateHub #更新同步平台`;
   return msg;
 }
 
