@@ -17,7 +17,8 @@ function escapeXml(str) {
 
 function formatDate(isoStr) {
   if (!isoStr) return new Date().toISOString();
-  return new Date(isoStr).toISOString();
+  const d = new Date(isoStr);
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
 function generateAtomFeed(data) {
@@ -28,22 +29,19 @@ function generateAtomFeed(data) {
     if (!platform.updates || platform.updates.length === 0) continue;
 
     for (const u of platform.updates) {
-      const title = `${u.platform} ${u.version} (${u.build})`;
-      const published = formatDate(u.postingDate || data.lastChecked);
+      const title = `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`;
+      const published = formatDate(u.postingDate || u.firstSeen || data.lastChecked);
       const id = `tag:apple-update-checker,${published.split('T')[0]}:${u.platform}-${u.version}-${u.build}`;
 
-      let content = `<p><strong>${escapeXml(u.platform)}</strong> ${escapeXml(u.version)} (${escapeXml(u.build)})</p>`;
+      let content = `<p><strong>${escapeXml(u.platform)}</strong> ${escapeXml(u.version)}${u.build ? ` (${escapeXml(u.build)})` : ''}</p>`;
       content += `<ul>`;
-      if (u.postingDate) content += `<li>发布日期: ${new Date(u.postingDate).toLocaleDateString('zh-CN')}</li>`;
+      if (u.postingDate || u.firstSeen) content += `<li>发布日期: ${new Date(u.postingDate || u.firstSeen).toLocaleDateString('zh-CN')}</li>`;
       if (u.downloadSize) content += `<li>大小: ${formatSize(u.downloadSize)}</li>`;
       if (u._updateType) content += `<li>类型: ${updateTypeLabel(u._updateType)}</li>`;
       content += `</ul>`;
 
-      if (u._firmwareUrls) {
-        content += `<p>`;
-        if (u._firmwareUrls.apple) content += `<a href="${escapeXml(u._firmwareUrls.apple)}">Apple 固件下载</a> | `;
-        if (u._firmwareUrls.ipswme) content += `<a href="${escapeXml(u._firmwareUrls.ipswme)}">IPSW.me</a>`;
-        content += `</p>`;
+      if (u._firmwareUrls && u._firmwareUrls.apple) {
+        content += `<p><a href="${escapeXml(u._firmwareUrls.apple)}">Apple 固件下载</a></p>`;
       }
 
       content += `<p><a href="${REPO_URL}/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>`;
@@ -53,7 +51,7 @@ function generateAtomFeed(data) {
     <link href="${REPO_URL}/blob/main/UPDATE_STATUS.md"/>
     <id>${id}</id>
     <published>${published}</published>
-    <updated>${now}</updated>
+    <updated>${published}</updated>
     <summary>${escapeXml(u.platform)} ${escapeXml(u.version)} 更新</summary>
     <content type="html"><![CDATA[${content}]]></content>
     <category term="${escapeXml(u.platform)}" label="${escapeXml(u.platform)}"/>
@@ -73,7 +71,7 @@ function generateAtomFeed(data) {
     <link href="${REPO_URL}/blob/main/UPDATE_STATUS.md"/>
     <id>${id}</id>
     <published>${published}</published>
-    <updated>${now}</updated>
+    <updated>${published}</updated>
     <summary>XProtect 安全签名更新</summary>
     <content type="html"><![CDATA[${content}]]></content>
     <category term="XProtect" label="XProtect"/>
@@ -111,7 +109,7 @@ function formatSize(bytes) {
   return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
-function main() {
+async function main() {
   console.log('=== RSS Feed Generator ===');
 
   const dataFile = path.join(__dirname, '..', 'data', 'updates.json');
@@ -136,4 +134,7 @@ function main() {
   console.log(`Total entries: ${entryCount}`);
 }
 
-main().catch(console.error);
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

@@ -22,7 +22,7 @@
 
 ### 📊 分析功能
 - **更新间隔统计**，显示各平台平均更新频率
-- **固件下载链接**，Apple 官方 OTA 和 IPSW.me 链接
+- **固件下载链接**，Apple 官方 OTA 链接
 - 网络失败自动重试（3次）
 
 ## 更新状态
@@ -93,6 +93,15 @@ TELEGRAM_BOT_TOKEN="token" TELEGRAM_CHAT_ID="chat_id" node scripts/check-updates
 | `updates.json` | 系统更新数据（含更新类型、固件链接、间隔统计） |
 | `security.json` | 安全公告数据（CVE 列表、release notes 摘要） |
 | `xprotect.json` | XProtect 版本记录 |
+
+## 数据说明
+
+- **主数据源**：`https://gdmf.apple.com/v2/pmv`（Apple 官方待推送版本目录，JSON），提供各平台版本 / Build / 发布日期 / RSR 标记
+- **辅助数据源**：mesu.apple.com OTA feed（仅 iOS/watchOS/tvOS），补充固件下载链接与大小；watchOS/tvOS 路径带 `watch/`、`tv/` 前缀
+- 更新类型：`ProductVersionExtra=(a)` 或版本形如 `x.y (a)` → 🔴 安全响应 (RSR)；`x`/`x.0` → 🟢 大版本；其余 → 🔵 小版本
+- XProtect 检测暂不可用（gdmf/pmv 不含该数据，需接入 Pallas AssetAudience），脚本自动跳过并保留旧记录
+- 某平台抓取失败时，状态表显示 ⚠️ 抓取失败（与“无更新”区分），并记录在 Actions 日志中
+- 发布日期取自 pmv 的 `PostingDate`；无日期时显示 `firstSeen`（脚本首次发现时间）
 
 ## 手动触发
 

@@ -20,7 +20,10 @@ function sleep(ms) {
 async function fetchWithRetry(url, options, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch(url, options);
+      const res = await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(30000),
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res;
     } catch (err) {
@@ -35,35 +38,42 @@ async function fetchDigest() {
   const res = await fetchWithRetry(`${HUB_URL}/api/daily-digest`, {
     headers: { 'Authorization': `Bearer ${HUB_TOKEN}` },
   });
-  return res.json();
+  const data = await res.json();
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid daily-digest response');
+  }
+  return data;
 }
 
 function formatMessage(digest) {
-  const date = digest.date.slice(0, 10);
+  const date = String(digest.date || new Date().toISOString()).slice(0, 10);
+  const stats = digest.stats || {};
+  const projects = Array.isArray(digest.projects) ? digest.projects : [];
   let msg = `📋 <b>Update Hub 每日汇总</b>\n\n`;
   msg += `📅 ${date}\n`;
-  msg += `📊 共 <b>${digest.total}</b> 条更新`;
+  msg += `📊 共 <b>${escapeHtml(digest.total)}</b> 条更新`;
 
   const parts = [];
-  if (digest.stats.changed) parts.push(`🔵 ${digest.stats.changed} 变更`);
-  if (digest.stats.errors) parts.push(`🔴 ${digest.stats.errors} 异常`);
-  if (digest.stats.ok) parts.push(`🟢 ${digest.stats.ok} 正常`);
+  if (stats.changed) parts.push(`🔵 ${stats.changed} 变更`);
+  if (stats.errors) parts.push(`🔴 ${stats.errors} 异常`);
+  if (stats.ok) parts.push(`🟢 ${stats.ok} 正常`);
   if (parts.length) msg += ` · ${parts.join(' · ')}`;
   msg += '\n\n';
 
-  for (const proj of digest.projects) {
-    msg += `${proj.icon} <b>${escapeHtml(proj.label)}</b> (${proj.count} 条)\n`;
-    for (const u of proj.updates.slice(0, 5)) {
+  for (const proj of projects) {
+    const updates = Array.isArray(proj.updates) ? proj.updates : [];
+    msg += `${escapeHtml(proj.icon)} <b>${escapeHtml(proj.label)}</b> (${escapeHtml(proj.count)} 条)\n`;
+    for (const u of updates.slice(0, 5)) {
       const icon = u.status === 'changed' ? '🔵' : u.status === 'error' ? '🔴' : u.status === 'warning' ? '🟡' : '🟢';
       msg += `  ${icon} ${escapeHtml(u.title)}`;
       if (u.version) msg += ` <code>v${escapeHtml(u.version)}</code>`;
       msg += '\n';
       if (u.diff_url) {
-        msg += `    <a href="${u.diff_url}">查看详情</a>\n`;
+        msg += `    <a href="${escapeHtml(u.diff_url)}">查看详情</a>\n`;
       }
     }
-    if (proj.updates.length > 5) {
-      msg += `  ... 还有 ${proj.updates.length - 5} 条\n`;
+    if (updates.length > 5) {
+      msg += `  ... 还有 ${updates.length - 5} 条\n`;
     }
     msg += '\n';
   }
@@ -84,6 +94,7 @@ async function sendTelegram(text) {
   const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(30000),
     body: JSON.stringify({
       chat_id: CHAT_ID,
       text,

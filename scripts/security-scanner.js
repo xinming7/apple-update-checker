@@ -220,11 +220,12 @@ function matchWithLocalData(securityEntries, dataDir) {
       const latest = platform.updates[0];
       if (!latest || !latest.version) continue;
 
-      // 在安全公告中查找匹配的版本
+      // 在安全公告中查找匹配的版本（按 major.minor 段精确比较，避免 "16.51" 误配 "16.5"）
+      const seg2 = (v) => v.split('.').slice(0, 2).join('.');
       const matchedEntry = securityEntries.find(e =>
         e.platform === platform.name &&
         e.version &&
-        latest.version.startsWith(e.version.split('.').slice(0, 2).join('.'))
+        seg2(latest.version) === seg2(e.version)
       );
 
       if (matchedEntry) {
@@ -382,4 +383,7 @@ function generateSecurityMarkdown(data) {
   return md;
 }
 
-main().catch(console.error);
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

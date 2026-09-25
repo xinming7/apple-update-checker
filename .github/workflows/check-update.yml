@@ -6,6 +6,10 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch: # 手动触发
 
+concurrency:
+  group: check-apple-updates
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
@@ -55,10 +59,15 @@ jobs:
       - name: Create Issue for new updates
         if: steps.check.outputs.has_new_updates == 'true'
         uses: actions/github-script@v7
+        env:
+          # 通过环境变量传递，避免把外部数据直接内插进脚本（脚本注入面）
+          NEW_UPDATES: ${{ steps.check.outputs.new_updates }}
         with:
           script: |
             const title = `🍎 Apple 系统更新 - ${new Date().toISOString().split('T')[0]}`;
-            const body = `## 检测到新的 Apple 系统更新\n\n${{ steps.check.outputs.new_updates }}\n\n详细信息请查看 [UPDATE_STATUS.md](./UPDATE_STATUS.md)\n\n安全公告: [SECURITY_STATUS.md](./SECURITY_STATUS.md)\n\nRSS Feed: [feed.xml](./feed.xml)\n\n---\n*由 GitHub Actions 自动创建*`;
+            const newUpdates = process.env.NEW_UPDATES || '';
+            const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+            const body = `## 检测到新的 Apple 系统更新\n\n${newUpdates}\n\n详细信息请查看 [UPDATE_STATUS.md](${repoUrl}/blob/main/UPDATE_STATUS.md)\n\n安全公告: [SECURITY_STATUS.md](${repoUrl}/blob/main/SECURITY_STATUS.md)\n\nRSS Feed: [feed.xml](${repoUrl}/blob/main/feed.xml)\n\n---\n*由 GitHub Actions 自动创建*`;
 
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
