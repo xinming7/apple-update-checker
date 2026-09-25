@@ -459,7 +459,16 @@ function formatTelegramMessage(newUpdates, intervalStats) {
   if (msg.length > MAX_TG_LEN) {
     msg = msg.slice(0, MAX_TG_LEN - 30) + '\n\n... (内容过长已截断)';
   }
-  msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>`;
+  msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
+
+  // 标签
+  const tags = new Set(['#苹果系统更新']);
+  for (const u of newUpdates) {
+    if (u.platform) tags.add(`#${u.platform}更新`);
+    if (u._updateType === 'security-response') tags.add('#安全响应');
+    if (u._updateType === 'xprotect') tags.add('#XProtect');
+  }
+  msg += [...tags].join(' ');
   return msg;
 }
 
