@@ -7,13 +7,14 @@
 ### 🔔 通知与订阅
 - 每天北京时间 10:00 自动检查更新
 - 检测到新版本自动创建 GitHub Issue 通知
-- 支持 Telegram Bot 推送通知
-- **RSS Feed** 输出，可用任意 RSS 阅读器订阅
+- 支持 Telegram Bot 推送通知（HTML 安全截断，不会破坏标签）
+- **RSS Feed** 输出（Atom 格式），可用任意 RSS 阅读器订阅
+- 每日北京时间 20:00 汇总推送（需接入 Update Hub）
 
 ### 📱 平台支持
 - iOS、macOS、watchOS、tvOS、visionOS 五大平台
-- **XProtect 更新监控**（macOS 安全签名）
-- 支持平台过滤，只关注你关心的平台
+- 支持平台过滤，只关注你关心的平台（`PLATFORMS` 环境变量）
+- 过滤时自动保留其余平台历史数据，避免误报
 
 ### 🔒 安全特性
 - **CVE 安全漏洞追踪**，自动抓取 Apple Security Updates 页面
@@ -22,8 +23,32 @@
 
 ### 📊 分析功能
 - **更新间隔统计**，显示各平台平均更新频率
-- **固件下载链接**，Apple 官方 OTA 链接
-- 网络失败自动重试（3次）
+- **固件下载链接**（Apple 官方 OTA，仅 iOS/watchOS/tvOS 有）
+- 请求超时 30s + 失败自动重试（3 次）
+
+## 数据源架构
+
+| 数据源 | 类型 | 用途 | 覆盖平台 |
+|--------|------|------|----------|
+| `gdmf.apple.com/v2/pmv` | JSON（主源） | 版本 / Build / PostingDate / RSR 标记 | 全 5 平台 |
+| `mesu.apple.com` OTA feed | XML plist（辅助） | 补充固件下载链接与大小 | iOS / watchOS / tvOS |
+
+- gdmf/pmv 通过 `PublicAssetSets` 和 `PublicBackgroundSecurityImprovements` 分别提供正式版本和 RSR
+- mesu feed 的 `OSVersion` 带 `9.9.` 打码前缀（如 `9.9.27.0` 实为 `27.0`），脚本自动归一化
+- macOS / visionOS 无公开 mesu XML feed，固件链接正确留空
+
+### 更新类型分类
+
+| 标记 | 类型 | 判断规则 |
+|------|------|----------|
+| 🔴 | 安全响应 (RSR) | 标题含 `Rapid Security Response`、`ProductVersionExtra` 或版本形如 `(a)` |
+| 🟢 | 大版本更新 | 纯主版本 `x` 或 `x.0` |
+| 🔵 | 小版本更新 | `x.y` / `x.y.z` |
+| 🛡️ | XProtect 更新 | macOS 安全签名（当前暂不可用，见下方说明） |
+
+### XProtect 说明
+
+gdmf/pmv 不含 XProtect 数据，需接入 Pallas（`gdmf/v2/assets` + `XProtectPlistConfigData` 的 AssetAudience）。当前检测会自动跳过并保留旧记录。
 
 ## 更新状态
 
@@ -31,38 +56,31 @@
 - [SECURITY_STATUS.md](./SECURITY_STATUS.md) — 安全公告追踪
 - [feed.xml](./feed.xml) — RSS Feed
 
-## 通知方式
+## 配置
 
-### GitHub Issue
+### 必需 Secrets
 
-检测到新版本时自动创建带 `apple-update` 标签的 Issue。
+在 GitHub 仓库 → Settings → Secrets and variables → Actions 中添加：
 
-### Telegram Bot
+| Secret | 用途 |
+|--------|------|
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot Token（从 [@BotFather](https://t.me/BotFather) 获取） |
+| `TELEGRAM_CHAT_ID` | Telegram Chat ID（从 [@userinfobot](https://t.me/userinfobot) 获取） |
 
-**配置步骤：**
+### 可选 Secrets
 
-1. 与 [@BotFather](https://t.me/BotFather) 创建一个 Bot，获取 Token
-2. 获取你的 Chat ID（发消息给 [@userinfobot](https://t.me/userinfobot)）
-3. 在 GitHub 仓库 → Settings → Secrets and variables → Actions，添加：
-   - `TELEGRAM_BOT_TOKEN` — Bot 的 Token
-   - `TELEGRAM_CHAT_ID` — 你的 Chat ID
+| Secret | 用途 |
+|--------|------|
+| `UPDATE_HUB_URL` | Update Hub 仪表盘地址 |
+| `UPDATE_HUB_TOKEN` | Update Hub 访问 Token |
 
-### RSS Feed
+### 可选 Variables
 
-订阅 `feed.xml`（如 `https://<username>.github.io/apple-update-checker/feed.xml`），或通过 GitHub Raw 链接访问。
+| Variable | 用途 | 示例 |
+|----------|------|------|
+| `PLATFORMS` | 只检查指定平台（逗号分隔） | `ios,macos` |
 
-### Update Hub
-
-如需接入 Update Hub，添加以下 Secrets：
-- `UPDATE_HUB_URL` — Update Hub 地址
-- `UPDATE_HUB_TOKEN` — 访问 Token
-
-## 平台过滤
-
-在 GitHub 仓库 → Settings → Secrets and variables → Variables 中添加：
-- `PLATFORMS` — 逗号分隔的平台列表，如 `ios,macos`（留空则检查全部）
-
-本地测试：
+## 本地测试
 
 ```bash
 # 检查所有平台
@@ -71,37 +89,20 @@ node scripts/check-updates.js
 # 只检查 iOS 和 macOS
 PLATFORMS="ios,macos" node scripts/check-updates.js
 
+# 指定仓库地址（用于生成链接）
+REPO_URL="https://github.com/你的用户名/apple-update-checker" node scripts/check-updates.js
+
 # 带 Telegram 通知
 TELEGRAM_BOT_TOKEN="token" TELEGRAM_CHAT_ID="chat_id" node scripts/check-updates.js
+
+# 扫描安全公告
+node scripts/security-scanner.js
+
+# 生成 RSS Feed
+node scripts/generate-rss.js
 ```
 
-## 更新类型分类
-
-| 标记 | 类型 | 说明 |
-|------|------|------|
-| 🟢 | 大版本更新 | iOS 19 → iOS 20 |
-| 🔵 | 小版本更新 | iOS 19.0 → iOS 19.1 |
-| 🔴 | 安全响应 (RSR) | Rapid Security Response |
-| 🛡️ | XProtect 更新 | macOS 安全签名更新 |
-
-## 数据文件
-
-`data/` 目录包含结构化数据：
-
-| 文件 | 说明 |
-|------|------|
-| `updates.json` | 系统更新数据（含更新类型、固件链接、间隔统计） |
-| `security.json` | 安全公告数据（CVE 列表、release notes 摘要） |
-| `xprotect.json` | XProtect 版本记录 |
-
-## 数据说明
-
-- **主数据源**：`https://gdmf.apple.com/v2/pmv`（Apple 官方待推送版本目录，JSON），提供各平台版本 / Build / 发布日期 / RSR 标记
-- **辅助数据源**：mesu.apple.com OTA feed（仅 iOS/watchOS/tvOS），补充固件下载链接与大小；watchOS/tvOS 路径带 `watch/`、`tv/` 前缀
-- 更新类型：`ProductVersionExtra=(a)` 或版本形如 `x.y (a)` → 🔴 安全响应 (RSR)；`x`/`x.0` → 🟢 大版本；其余 → 🔵 小版本
-- XProtect 检测暂不可用（gdmf/pmv 不含该数据，需接入 Pallas AssetAudience），脚本自动跳过并保留旧记录
-- 某平台抓取失败时，状态表显示 ⚠️ 抓取失败（与“无更新”区分），并记录在 Actions 日志中
-- 发布日期取自 pmv 的 `PostingDate`；无日期时显示 `firstSeen`（脚本首次发现时间）
+> GitHub Actions 环境中 `REPO_URL` 自动从 `github.repository` 注入，本地运行需手动设置。
 
 ## 手动触发
 
@@ -112,10 +113,10 @@ TELEGRAM_BOT_TOKEN="token" TELEGRAM_CHAT_ID="chat_id" node scripts/check-updates
 ```
 apple-update-checker/
 ├── scripts/
-│   ├── check-updates.js      # 系统更新检查（含 XProtect、平台过滤、更新分类）
+│   ├── check-updates.js      # 系统更新检查（主源 gdmf/pmv + 辅助 mesu）
 │   ├── security-scanner.js   # 安全公告扫描（CVE 追踪、release notes）
-│   ├── generate-rss.js       # RSS Feed 生成器
-│   └── daily-digest.js       # Update Hub 每日汇总
+│   ├── generate-rss.js       # RSS Feed 生成器（Atom 格式）
+│   └── daily-digest.js       # Update Hub 每日汇总（Telegram 推送）
 ├── .github/
 │   └── workflows/
 │       ├── check-update.yml  # 主定时任务（更新检查 + 安全扫描 + RSS）
@@ -129,6 +130,20 @@ apple-update-checker/
 ├── feed.xml                  # RSS Feed（自动生成）
 └── README.md
 ```
+
+### 数据文件说明
+
+| 文件 | 说明 |
+|------|------|
+| `data/updates.json` | 系统更新数据（含更新类型、固件链接、间隔统计、firstSeen） |
+| `data/security.json` | 安全公告数据（CVE 列表、release notes 摘要） |
+| `data/xprotect.json` | XProtect 版本记录（当前不可用时保留旧记录） |
+
+## 已知限制
+
+1. **XProtect 检测暂不可用** — gdmf/pmv 不含 XProtect 数据，需接入 Pallas AssetAudience
+2. **固件链接覆盖不全** — macOS / visionOS 无公开 mesu feed，Apple TV 4K（型号 A1842 等）不在 mesu feed 中
+3. **security-scanner 依赖 HTML 正则** — Apple 改版会失效，建议后续换官方结构化数据
 
 ## License
 
