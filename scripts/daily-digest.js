@@ -11,11 +11,30 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+const RETRY_DELAY_MS = 2000;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch (err) {
+      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
+      if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
+      else throw err;
+    }
+  }
+}
+
 async function fetchDigest() {
-  const res = await fetch(`${HUB_URL}/api/daily-digest`, {
+  const res = await fetchWithRetry(`${HUB_URL}/api/daily-digest`, {
     headers: { 'Authorization': `Bearer ${HUB_TOKEN}` },
   });
-  if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json();
 }
 
@@ -57,8 +76,8 @@ function formatMessage(digest) {
 }
 
 async function sendTelegram(text) {
-  // Telegram 消息长度限制 4096 字符
-  const MAX_LEN = 4000;
+  // 截断放在标签追加之后，上限 4096
+  const MAX_LEN = 4096;
   if (text.length > MAX_LEN) {
     text = text.slice(0, MAX_LEN - 30) + '\n\n... (内容过长已截断)';
   }

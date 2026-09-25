@@ -454,11 +454,6 @@ function formatTelegramMessage(newUpdates, intervalStats) {
     }
   }
 
-  // Telegram 消息长度限制 4096 字符，超出则截断
-  const MAX_TG_LEN = 4000;
-  if (msg.length > MAX_TG_LEN) {
-    msg = msg.slice(0, MAX_TG_LEN - 30) + '\n\n... (内容过长已截断)';
-  }
   msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
 
   // 标签
@@ -469,6 +464,12 @@ function formatTelegramMessage(newUpdates, intervalStats) {
     if (u._updateType === 'xprotect') tags.add('#XProtect');
   }
   msg += [...tags].join(' ');
+
+  // 截断放在最后，确保链接和标签都已追加
+  const MAX_TG_LEN = 4096;
+  if (msg.length > MAX_TG_LEN) {
+    msg = msg.slice(0, MAX_TG_LEN - 30) + '\n\n... (内容过长已截断)';
+  }
   return msg;
 }
 
