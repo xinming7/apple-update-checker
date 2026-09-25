@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const REPO_URL = 'https://github.com/xinming7/apple-update-checker';
+const REPO_URL = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
 const FEED_TITLE = 'Apple System Updates';
 const FEED_SUBTITLE = 'iOS, macOS, watchOS, tvOS, visionOS, XProtect 系统更新追踪';
 

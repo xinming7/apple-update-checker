@@ -745,7 +745,8 @@ function formatTelegramMessage(newUpdates, intervalStats) {
     }
   }
 
-  msg += `🔗 <a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
+  const repoUrl = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
+  msg += `🔗 <a href="${repoUrl}/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
 
   // 标签
   const tags = new Set(['#苹果系统更新', '#更新同步平台']);
