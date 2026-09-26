@@ -323,8 +323,8 @@ function parsePmvData(data) {
     }
     const deduped = [...byVersion.values()];
 
-    // 过滤旧版本线：只保留最新主版本线 + RSR
-    // 例如有了27.0就不推送26.7、26.3.x
+    // 过滤旧版本线：只保留最新主版本线
+    // RSR 也过滤：只保留比最新正式版更高的版本（如27.x有RSR就不保留26.x的RSR）
     const rsr = deduped.filter(u => u._updateType === 'security-response');
     const nonRsr = deduped.filter(u => u._updateType !== 'security-response');
 
@@ -333,7 +333,10 @@ function parsePmvData(data) {
       // 取最新版本的主版本号（如27.0 → 27）
       const latestMajor = semverKey(nonRsr[0].version)[0];
       const latestLine = nonRsr.filter(u => semverKey(u.version)[0] === latestMajor);
-      filtered = [...latestLine, ...rsr];
+      // RSR 只保留比最新正式版更高的版本（完整版本比较）
+      const latestStableVer = nonRsr[0].version;
+      const newerRsr = rsr.filter(u => compareUpdatesDesc(u, { version: latestStableVer }) < 0);
+      filtered = [...latestLine, ...newerRsr];
     } else {
       filtered = rsr;
     }
@@ -591,12 +594,13 @@ function collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform)
     const knownVersions = allKnownVersions[key] || new Set();
     // 取该平台最新正式版的主版本号，Beta 只保留更高版本
     const releases = updatesByPlatform[key] || [];
-    const latestStableMajor = releases.length > 0 ? semverKey(releases[0].version)[0] : 0;
+    const latestStableVer = releases.length > 0 ? releases[0].version : '0';
 
     for (const u of mesuResult.betaUpdates) {
       if (knownVersions.has(u.version)) continue;
-      // 只保留比最新正式版主版本号更高的 Beta（真正的未发布测试版）
-      if (semverKey(u.version)[0] <= latestStableMajor) continue;
+      // 只保留比最新正式版更高版本的 Beta（完整版本比较，如27.2 > 27.0）
+      // compareUpdatesDesc(a, b) < 0 表示 a 比 b 更新
+      if (compareUpdatesDesc(u, { version: latestStableVer }) >= 0) continue;
       all.push(u);
     }
   }
