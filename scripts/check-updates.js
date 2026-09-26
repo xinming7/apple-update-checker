@@ -1032,11 +1032,14 @@ async function main() {
   });
   enrichWithMesu(updatesByPlatform, mesuByPlatform);
 
-  // 收集 beta 版本（来自 mesu feed 的 ReleaseType: Beta 条目）
-  const betaUpdates = collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform);
-  if (betaUpdates.length > 0) {
-    console.log(`  Beta: ${betaUpdates.map(u => `${u.platform} ${u.version} (${u.build})`).join(', ')}`);
-  }
+  // [DISABLED] Beta 检测：当前数据源（mesu/gdmf）不含真实 Public Beta 数据，
+  // mesu 的 "Beta" 条目实为 iPadOS 长期支持版内部标识，非真正的 Public Beta。
+  // 待找到可靠数据源后取消注释启用。
+  // const betaUpdates = collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform);
+  // if (betaUpdates.length > 0) {
+  //   console.log(`  Beta: ${betaUpdates.map(u => `${u.platform} ${u.version} (${u.build})`).join(', ')}`);
+  // }
+  const betaUpdates = [];
 
   // XProtect
   const xpResult = await checkXProtectUpdate(dataDir, pmvRaw).catch(() => null);
