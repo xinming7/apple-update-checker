@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { execSync } = require('child_process');
 
 // 平台定义
 const ALL_PLATFORMS = {
@@ -51,33 +52,26 @@ function sleep(ms) {
 }
 
 /**
- * 原生 https 请求（Node.js fetch/undici 与 Apple CDN 存在兼容性问题，
- * 表现为连接重置或自签名证书错误；原生 https 模块可正常工作）
+ * 使用 curl 获取数据（Node.js fetch/undici 和 native https 均无法信任
+ * Apple CDN 证书链，curl 使用系统证书库可正常工作）
  */
-function httpsGet(urlStr, options = {}) {
+function curlGet(urlStr, options = {}) {
   return new Promise((resolve, reject) => {
-    const url = new URL(urlStr);
-    const req = https.get({
-      hostname: url.hostname,
-      path: url.pathname + url.search,
-      method: 'GET',
-      headers: options.headers || {},
-      timeout: FETCH_TIMEOUT_MS,
-    }, (res) => {
-      const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => {
-        const body = Buffer.concat(chunks);
-        resolve({
-          ok: res.statusCode >= 200 && res.statusCode < 300,
-          status: res.statusCode,
-          json: () => Promise.resolve(JSON.parse(body.toString())),
-          text: () => Promise.resolve(body.toString()),
-        });
+    try {
+      const headers = Object.entries(options.headers || {})
+        .map(([k, v]) => `-H '${k}: ${v}'`)
+        .join(' ');
+      const cmd = `curl -s --connect-timeout 15 --max-time 30 ${headers} '${urlStr}'`;
+      const stdout = execSync(cmd, { encoding: 'utf-8', timeout: FETCH_TIMEOUT_MS + 5000 });
+      resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(JSON.parse(stdout)),
+        text: () => Promise.resolve(stdout),
       });
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
+    } catch (err) {
+      reject(new Error(`curl failed: ${err.message}`));
+    }
   });
 }
 
@@ -86,9 +80,9 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
     try {
       let response;
       try {
-        response = await httpsGet(url, options);
-      } catch (nativeErr) {
-        console.error(`  https module failed: ${nativeErr.message}, trying fetch...`);
+        response = await curlGet(url, options);
+      } catch (curlErr) {
+        console.error(`  curl failed: ${curlErr.message}, trying fetch...`);
         response = await fetch(url, {
           ...options,
           signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
