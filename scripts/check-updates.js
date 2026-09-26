@@ -803,14 +803,25 @@ function formatTelegramMessage(newUpdates, intervalStats) {
   const repoUrl = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
   msg += `🔗 <a href="${repoUrl}/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
 
-  // 标签
-  const tags = new Set(['#苹果系统更新', '#更新同步平台']);
+  // 标签：平台 tag 按出现顺序排在前面，通用 tag 在后面
+  const platformTags = [];
+  const extraTags = [];
+  const seen = new Set();
   for (const u of newUpdates) {
-    if (u.platform) tags.add(`#${u.platform}更新`);
-    if (u._updateType === 'security-response') tags.add('#安全响应');
-    if (u._updateType === 'xprotect') tags.add('#XProtect');
+    if (u.platform && !seen.has(u.platform)) {
+      seen.add(u.platform);
+      platformTags.push(`#${u.platform}更新`);
+    }
+    if (u._updateType === 'security-response' && !seen.has('security-response')) {
+      seen.add('security-response');
+      extraTags.push('#安全响应');
+    }
+    if (u._updateType === 'xprotect' && !seen.has('xprotect')) {
+      seen.add('xprotect');
+      extraTags.push('#XProtect');
+    }
   }
-  msg += [...tags].join(' ');
+  msg += [...platformTags, ...extraTags, '#苹果系统更新'].join(' ');
 
   // 截断放在最后，确保链接和标签都已追加
   return truncateHtmlMessage(msg);
