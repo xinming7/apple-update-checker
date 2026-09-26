@@ -464,7 +464,6 @@ function parsePlist(xml) {
 
 /**
  * 解析 mesu OTA plist，提取固件下载链接与大小
- * 返回 { updates: [...], betaUpdates: [...] }
  */
 function parseMesuXML(xml, platformKey) {
   let root = null;
@@ -472,17 +471,16 @@ function parseMesuXML(xml, platformKey) {
     root = parsePlist(xml);
   } catch (err) {
     console.warn(`  plist parse failed for ${platformKey}: ${err.message}`);
-    return { updates: [], betaUpdates: [] };
+    return [];
   }
 
   const assets = root && Array.isArray(root.Assets) ? root.Assets : [];
   if (!assets.length) {
     console.warn(`  No Assets array found for ${platformKey}`);
-    return { updates: [], betaUpdates: [] };
+    return [];
   }
 
   const updates = [];
-  const betaUpdates = [];
   const num = (v) => {
     if (v == null) return undefined;
     const n = parseInt(v, 10);
@@ -492,9 +490,10 @@ function parseMesuXML(xml, platformKey) {
   for (const asset of assets) {
     if (!asset || typeof asset !== 'object' || Array.isArray(asset)) continue;
 
-    // 过滤非用户可见资产：恢复盘元数据 / 哨兵
+    // 过滤非用户可见资产：恢复盘元数据 / 预发布种子 / 哨兵
     const docId = asset.SUDocumentationID != null ? String(asset.SUDocumentationID) : '';
     if (docId.startsWith('TetheredUpdateInfo')) continue;
+    if (docId === 'PreRelease') continue;
 
     const build = asset.Build != null ? String(asset.Build) : undefined;
     if (build && /^99Z/.test(build)) continue;
@@ -503,9 +502,6 @@ function parseMesuXML(xml, platformKey) {
     if (!rawVersion) continue;
     const version = normalizeVersion(rawVersion);
     if (/^99(\.0)?$/.test(version)) continue;
-
-    const releaseType = asset.ReleaseType != null ? String(asset.ReleaseType) : '';
-    const isBeta = releaseType === 'Beta' || docId === 'PreRelease';
 
     const realUpdateSize = asset.RealUpdateAttributes && typeof asset.RealUpdateAttributes === 'object'
       ? asset.RealUpdateAttributes.RealUpdateDownloadSize
@@ -524,27 +520,10 @@ function parseMesuXML(xml, platformKey) {
     };
 
     update._firmwareUrls = generateFirmwareUrls(update);
-
-    if (isBeta) {
-      update._updateType = 'beta';
-      betaUpdates.push(update);
-    } else {
-      updates.push(update);
-    }
+    updates.push(update);
   }
 
-  // beta 按版本降序去重，每个版本只保留最新 Build
-  betaUpdates.sort(compareUpdatesDesc);
-  const betaDeduped = [];
-  const betaSeen = new Set();
-  for (const u of betaUpdates) {
-    if (!betaSeen.has(u.version)) {
-      betaSeen.add(u.version);
-      betaDeduped.push(u);
-    }
-  }
-
-  return { updates, betaUpdates: betaDeduped.slice(0, 5) };
+  return updates;
 }
 
 /**
@@ -561,7 +540,7 @@ async function fetchMesuUpdates(platformKey) {
     });
     const xml = await response.text();
     const result = parseMesuXML(xml, platformKey);
-    console.log(`  mesu ${ALL_PLATFORMS[platformKey].name}: ${result.updates.length} releases, ${result.betaUpdates.length} betas`);
+    console.log(`  mesu ${ALL_PLATFORMS[platformKey].name}: ${result.length} releases`);
     return result;
   } catch (error) {
     console.warn(`  mesu enrichment failed for ${platformKey}: ${error.message}`);
@@ -573,9 +552,9 @@ async function fetchMesuUpdates(platformKey) {
  * 用 mesu 数据补充固件下载链接与大小
  */
 function enrichWithMesu(updatesByPlatform, mesuByPlatform) {
-  for (const [key, mesuResult] of Object.entries(mesuByPlatform)) {
-    if (!mesuResult || !mesuResult.updates) continue;
-    const index = new Map(mesuResult.updates.map(u => [`${u.version}-${u.build}`, u]));
+  for (const [key, mesuList] of Object.entries(mesuByPlatform)) {
+    if (!mesuList) continue;
+    const index = new Map(mesuList.map(u => [`${u.version}-${u.build}`, u]));
     for (const u of updatesByPlatform[key] || []) {
       const m = index.get(`${u.version}-${u.build}`);
       if (m) {
@@ -645,27 +624,6 @@ async function fetchBetaFromDevDocs() {
 
   await Promise.allSettled(tasks);
   return results;
-}
-
-/** [DISABLED] 旧版 mesu Beta 收集（保留代码，待找到可靠数据源后启用） */
-function collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform) {
-  const all = [];
-  for (const [key, mesuResult] of Object.entries(mesuByPlatform)) {
-    if (!mesuResult || !mesuResult.betaUpdates) continue;
-    const knownVersions = allKnownVersions[key] || new Set();
-    // 取该平台最新正式版的主版本号，Beta 只保留更高版本
-    const releases = updatesByPlatform[key] || [];
-    const latestStableVer = releases.length > 0 ? releases[0].version : '0';
-
-    for (const u of mesuResult.betaUpdates) {
-      if (knownVersions.has(u.version)) continue;
-      // 只保留比最新正式版更高版本的 Beta（完整版本比较，如27.2 > 27.0）
-      // compareUpdatesDesc(a, b) < 0 表示 a 比 b 更新
-      if (compareUpdatesDesc(u, { version: latestStableVer }) >= 0) continue;
-      all.push(u);
-    }
-  }
-  return all;
 }
 
 // ─── XProtect ─────────────────────────────────────────────────
@@ -911,6 +869,14 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
       groupMap.get(u.platform).push(u);
     }
 
+    // Beta 按平台名索引，方便在各平台组内追加
+    const betaByPlatform = new Map();
+    if (betaUpdates) {
+      for (const b of betaUpdates) {
+        betaByPlatform.set(b.platform, b);
+      }
+    }
+
     for (const platform of groups) {
       const updates = groupMap.get(platform);
       msg += `#${platform}更新\n\n`;
@@ -930,17 +896,37 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
         }
         msg += `\n`;
       }
+
+      // 该平台有 Beta 版本时追加在正式版之后
+      const beta = betaByPlatform.get(platform);
+      if (beta) {
+        msg += `🧪 <b>Beta 版本</b>\n`;
+        msg += `📱 <b>${escapeHtml(beta.platform)}</b> ${escapeHtml(beta.version)}`;
+        if (beta.betaNumber) msg += ` Beta ${beta.betaNumber}`;
+        msg += `\n\n`;
+      }
     }
-  }
 
-  // Beta 版本区域（数据来自 Apple Developer Docs）
-  if (betaUpdates && betaUpdates.length > 0) {
-    if (!msg) msg += `🍎 <b>Apple Beta 版本检测</b>\n\n`;
-    msg += `🧪 <b>当前 Beta 版本</b>\n\n`;
-
-    for (const u of betaUpdates) {
-      msg += `🧪 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
-      if (u.betaNumber) msg += ` Beta ${u.betaNumber}`;
+    // 没有正式版更新但有 Beta 的平台，单独展示
+    if (betaUpdates) {
+      for (const b of betaUpdates) {
+        if (!groups.includes(b.platform)) {
+          msg += `#${b.platform}更新\n\n`;
+          msg += `🧪 <b>Beta 版本</b>\n`;
+          msg += `📱 <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
+          if (b.betaNumber) msg += ` Beta ${b.betaNumber}`;
+          msg += `\n\n`;
+        }
+      }
+    }
+  } else if (betaUpdates && betaUpdates.length > 0) {
+    // 纯 Beta 无正式版更新
+    msg += `🍎 <b>Apple Beta 版本检测</b>\n\n`;
+    for (const b of betaUpdates) {
+      msg += `#${b.platform}更新\n\n`;
+      msg += `🧪 <b>Beta 版本</b>\n`;
+      msg += `📱 <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
+      if (b.betaNumber) msg += ` Beta ${b.betaNumber}`;
       msg += `\n\n`;
     }
   }
