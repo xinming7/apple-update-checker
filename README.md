@@ -153,6 +153,7 @@ apple-update-checker/
 1. **XProtect 检测暂不可用** — gdmf/pmv 不含 XProtect 数据，需接入 Pallas AssetAudience
 2. **固件链接覆盖不全** — macOS / visionOS 无公开 mesu feed，Apple TV 4K（型号 A1842 等）不在 mesu feed 中
 3. **security-scanner 依赖 HTML 正则** — Apple 改版会失效，建议后续换官方结构化数据
+4. **mesu feed ENOBUFS** — 部分环境下 mesu XML feed 的 curl 请求可能因缓冲区溢出失败（不影响主流程，主版本/Build 数据来自 gdmf/pmv）
 
 ## License
 

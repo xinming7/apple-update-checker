@@ -84,7 +84,9 @@ function generateAtomFeed(data) {
     for (const b of data.betaUpdates) {
       const betaVer = `${b.version}${b.betaNumber ? ` Beta ${b.betaNumber}` : ''}`;
       const title = `${b.platform} ${betaVer}`;
+      // Beta 条目用固定时间戳，避免每次 Actions 运行都改变 feed.xml
       const published = formatDate(data.lastChecked);
+      const stableUpdated = '2024-01-01T00:00:00Z';
       const id = `tag:apple-update-checker,${published.split('T')[0]}:${b.platform}-beta-${b.version}`;
       const content = `<p><strong>${escapeXml(b.platform)}</strong> ${escapeXml(betaVer)}</p><p>类型: Beta 版本</p>`;
 
@@ -93,7 +95,7 @@ function generateAtomFeed(data) {
     <link href="${REPO_URL}/blob/main/UPDATE_STATUS.md"/>
     <id>${id}</id>
     <published>${published}</published>
-    <updated>${published}</updated>
+    <updated>${stableUpdated}</updated>
     <summary>${escapeXml(b.platform)} ${escapeXml(betaVer)}</summary>
     <content type="html"><![CDATA[${content}]]></content>
     <category term="${escapeXml(b.platform)}" label="${escapeXml(b.platform)}"/>
@@ -147,6 +149,7 @@ async function main() {
     entryCount += (platform.updates || []).length;
   }
   if (data.xprotect) entryCount++;
+  if (data.betaUpdates) entryCount += data.betaUpdates.length;
   console.log(`Total entries: ${entryCount}`);
 }
 

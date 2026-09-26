@@ -11,7 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  sleep, escapeHtml, mdCell, formatSize, updateTypeLabelTg,
+  escapeHtml, mdCell, formatSize, updateTypeLabelTg,
   fmtDate, truncateHtmlMessage, FETCH_TIMEOUT_MS, fetchWithRetry
 } = require('./utils');
 
@@ -652,7 +652,8 @@ function computeIntervalStats(data) {
 // ─── 变更检测与通知 ────────────────────────────────────────────
 
 /**
- * 读取上次检查数据，检测是否有新版本
+ * 读取上次检查数据，检测是否有新版本（含 Beta 变更）
+ * 返回 newUpdates 数组；如有 Beta 变更，附带 _betaChanges 字段
  */
 function detectChanges(current, dataDir) {
   const prevFile = path.join(dataDir, 'updates.json');
@@ -681,6 +682,23 @@ function detectChanges(current, dataDir) {
           newUpdates.push(u);
         }
       }
+    }
+
+    // Beta 变更检测：对比上次 betaUpdates
+    const prevBeta = prev.betaUpdates || [];
+    const currBeta = current.betaUpdates || [];
+    const betaChanges = [];
+    for (const b of currBeta) {
+      const key = `${b.platform}-${b.version}-Beta${b.betaNumber || 0}`;
+      const found = prevBeta.find(p =>
+        p.platform === b.platform && p.version === b.version && (p.betaNumber || 0) === (b.betaNumber || 0)
+      );
+      if (!found) {
+        betaChanges.push(b);
+      }
+    }
+    if (betaChanges.length > 0) {
+      newUpdates._betaChanges = betaChanges;
     }
 
     return newUpdates;
@@ -1030,6 +1048,7 @@ async function main() {
   }
 
   // 输出新版本信息供 workflow 读取，并发送 Telegram 通知
+  const betaChanges = newUpdates?._betaChanges || [];
   if (newUpdates && newUpdates.length > 0) {
     console.log('');
     console.log('=== NEW UPDATES DETECTED ===');
@@ -1039,9 +1058,14 @@ async function main() {
     await sendTelegramMessage(formatTelegramMessage(newUpdates, intervalStats, betaUpdates));
     // 只在有新版本时同步到 Update Hub
     await reportToUpdateHub(newUpdates);
-  } else if (betaUpdates && betaUpdates.length > 0) {
-    // 没有正式版更新但有 beta 版本时，也发送通知
-    await sendTelegramMessage(formatTelegramMessage([], intervalStats, betaUpdates));
+  } else if (betaChanges.length > 0) {
+    // 没有正式版更新但有 Beta 变更时，发送通知
+    console.log('');
+    console.log('=== NEW BETA DETECTED ===');
+    for (const b of betaChanges) {
+      console.log(`BETA: ${b.platform} ${b.version} Beta ${b.betaNumber || ''}`);
+    }
+    await sendTelegramMessage(formatTelegramMessage([], intervalStats, betaChanges));
   }
 }
 
