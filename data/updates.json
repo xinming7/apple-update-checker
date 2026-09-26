@@ -1,25 +1,31 @@
 {
-  "lastChecked": "2026-09-24T07:23:45.569Z",
+  "lastChecked": "2026-09-26T04:51:48.557Z",
   "platforms": {
     "ios": {
       "name": "iOS",
-      "updates": []
+      "updates": [],
+      "_fetchError": true
     },
     "macos": {
       "name": "macOS",
-      "updates": []
+      "updates": [],
+      "_fetchError": true
     },
     "watchos": {
       "name": "watchOS",
-      "updates": []
+      "updates": [],
+      "_fetchError": true
     },
     "tvos": {
       "name": "tvOS",
-      "updates": []
+      "updates": [],
+      "_fetchError": true
     },
     "visionos": {
       "name": "visionOS",
-      "updates": []
+      "updates": [],
+      "_fetchError": true
     }
-  }
+  },
+  "_intervalStats": {}
 }

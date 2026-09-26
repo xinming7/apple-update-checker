@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Apple System Updates</title>
+  <subtitle>iOS, macOS, watchOS, tvOS, visionOS, XProtect 系统更新追踪</subtitle>
+  <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
+  <id>https://github.com/xinming7/apple-update-checker</id>
+  <updated>2026-09-26T04:51:48.888Z</updated>
+  <author>
+    <name>Apple Update Checker</name>
+  </author>
+</feed>
