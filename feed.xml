@@ -5,7 +5,7 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-09-26T13:45:11.455Z</updated>
+  <updated>2026-09-26T13:57:47.200Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
@@ -20,43 +20,13 @@
     <category term="iOS" label="iOS"/>
   </entry>
   <entry>
-    <title>iOS 27.0 (24A6437)</title>
+    <title>iOS 26.3.1 (23D771330a)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:iOS-27.0-24A6437</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>iOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 27.0 (24A6437)</p><ul><li>发布日期: 2026/9/14</li><li>大小: 7.9 GB</li><li>类型: 大版本更新</li></ul><p><a href="https://updates.cdn-apple.com/2026FallFCS/ef7b999c-218b-4a22-b247-80fe92366904/com_apple_MobileAsset_SoftwareUpdate/921482e5e543fe17d6ead8addee687b54d9cae709e7a171280e2ac76b1abeda4.aea">Apple 固件下载</a></p><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="iOS" label="iOS"/>
-  </entry>
-  <entry>
-    <title>iOS 27.0 (24A437)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:iOS-27.0-24A437</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>iOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 27.0 (24A437)</p><ul><li>发布日期: 2026/9/14</li><li>大小: 7.9 GB</li><li>类型: 大版本更新</li></ul><p><a href="https://updates.cdn-apple.com/2026FallFCS/ef7b999c-218b-4a22-b247-80fe92366904/com_apple_MobileAsset_SoftwareUpdate/921482e5e543fe17d6ead8addee687b54d9cae709e7a171280e2ac76b1abeda4.aea">Apple 固件下载</a></p><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="iOS" label="iOS"/>
-  </entry>
-  <entry>
-    <title>iOS 26.7 (23H6024)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:iOS-26.7-23H6024</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>iOS 26.7 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 26.7 (23H6024)</p><ul><li>发布日期: 2026/9/14</li><li>大小: 7.4 GB</li><li>类型: 小版本更新</li></ul><p><a href="https://updates.cdn-apple.com/2026FallFCS/630a6c4e-a113-4147-9217-fd35545f18c3/com_apple_MobileAsset_SoftwareUpdate/1d45fd32d4ff545cf25dd88e1cdc8cb0b6f9fb4e.zip">Apple 固件下载</a></p><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="iOS" label="iOS"/>
-  </entry>
-  <entry>
-    <title>iOS 26.7 (23H24)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:iOS-26.7-23H24</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>iOS 26.7 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 26.7 (23H24)</p><ul><li>发布日期: 2026/9/14</li><li>大小: 7.4 GB</li><li>类型: 小版本更新</li></ul><p><a href="https://updates.cdn-apple.com/2026FallFCS/630a6c4e-a113-4147-9217-fd35545f18c3/com_apple_MobileAsset_SoftwareUpdate/1d45fd32d4ff545cf25dd88e1cdc8cb0b6f9fb4e.zip">Apple 固件下载</a></p><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <id>tag:apple-update-checker,2026-03-17:iOS-26.3.1-23D771330a</id>
+    <published>2026-03-17T00:00:00.000Z</published>
+    <updated>2026-03-17T00:00:00.000Z</updated>
+    <summary>iOS 26.3.1 更新</summary>
+    <content type="html"><![CDATA[<p><strong>iOS</strong> 26.3.1 (23D771330a)</p><ul><li>发布日期: 2026/3/17</li><li>类型: 安全响应 (RSR)</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="iOS" label="iOS"/>
   </entry>
   <entry>
@@ -67,26 +37,6 @@
     <updated>2026-09-15T00:00:00.000Z</updated>
     <summary>macOS 27.0 更新</summary>
     <content type="html"><![CDATA[<p><strong>macOS</strong> 27.0 (26A5428)</p><ul><li>发布日期: 2026/9/15</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="macOS" label="macOS"/>
-  </entry>
-  <entry>
-    <title>macOS 27.0 (26A428)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-15:macOS-27.0-26A428</id>
-    <published>2026-09-15T00:00:00.000Z</published>
-    <updated>2026-09-15T00:00:00.000Z</updated>
-    <summary>macOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 27.0 (26A428)</p><ul><li>发布日期: 2026/9/15</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="macOS" label="macOS"/>
-  </entry>
-  <entry>
-    <title>macOS 26.7 (25G229)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-15:macOS-26.7-25G229</id>
-    <published>2026-09-15T00:00:00.000Z</published>
-    <updated>2026-09-15T00:00:00.000Z</updated>
-    <summary>macOS 26.7 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 26.7 (25G229)</p><ul><li>发布日期: 2026/9/15</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="macOS" label="macOS"/>
   </entry>
   <entry>
@@ -130,36 +80,6 @@
     <category term="watchOS" label="watchOS"/>
   </entry>
   <entry>
-    <title>watchOS 27.0 (24R364)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-23:watchOS-27.0-24R364</id>
-    <published>2026-09-23T00:00:00.000Z</published>
-    <updated>2026-09-23T00:00:00.000Z</updated>
-    <summary>watchOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.0 (24R364)</p><ul><li>发布日期: 2026/9/23</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="watchOS" label="watchOS"/>
-  </entry>
-  <entry>
-    <title>watchOS 26.6 (23U67)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-23:watchOS-26.6-23U67</id>
-    <published>2026-09-23T00:00:00.000Z</published>
-    <updated>2026-09-23T00:00:00.000Z</updated>
-    <summary>watchOS 26.6 更新</summary>
-    <content type="html"><![CDATA[<p><strong>watchOS</strong> 26.6 (23U67)</p><ul><li>发布日期: 2026/9/23</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="watchOS" label="watchOS"/>
-  </entry>
-  <entry>
-    <title>watchOS 26.6 (23U6067)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-23:watchOS-26.6-23U6067</id>
-    <published>2026-09-23T00:00:00.000Z</published>
-    <updated>2026-09-23T00:00:00.000Z</updated>
-    <summary>watchOS 26.6 更新</summary>
-    <content type="html"><![CDATA[<p><strong>watchOS</strong> 26.6 (23U6067)</p><ul><li>发布日期: 2026/9/23</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="watchOS" label="watchOS"/>
-  </entry>
-  <entry>
     <title>tvOS 27.0 (24J6361)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-09-14:tvOS-27.0-24J6361</id>
@@ -170,36 +90,6 @@
     <category term="tvOS" label="tvOS"/>
   </entry>
   <entry>
-    <title>tvOS 27.0 (24J361)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:tvOS-27.0-24J361</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>tvOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.0 (24J361)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="tvOS" label="tvOS"/>
-  </entry>
-  <entry>
-    <title>tvOS 26.6 (23L773)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:tvOS-26.6-23L773</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>tvOS 26.6 更新</summary>
-    <content type="html"><![CDATA[<p><strong>tvOS</strong> 26.6 (23L773)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="tvOS" label="tvOS"/>
-  </entry>
-  <entry>
-    <title>tvOS 26.6 (23L6773)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:tvOS-26.6-23L6773</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>tvOS 26.6 更新</summary>
-    <content type="html"><![CDATA[<p><strong>tvOS</strong> 26.6 (23L6773)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="tvOS" label="tvOS"/>
-  </entry>
-  <entry>
     <title>visionOS 27.0 (24M6362)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-09-14:visionOS-27.0-24M6362</id>
@@ -207,16 +97,6 @@
     <updated>2026-09-14T00:00:00.000Z</updated>
     <summary>visionOS 27.0 更新</summary>
     <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.0 (24M6362)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="visionOS" label="visionOS"/>
-  </entry>
-  <entry>
-    <title>visionOS 27.0 (24M362)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:visionOS-27.0-24M362</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>visionOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.0 (24M362)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="visionOS" label="visionOS"/>
   </entry>
 </feed>
