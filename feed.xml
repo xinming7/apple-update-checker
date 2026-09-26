@@ -5,7 +5,7 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-09-26T13:57:47.200Z</updated>
+  <updated>2026-09-26T14:11:56.857Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
@@ -20,16 +20,6 @@
     <category term="iOS" label="iOS"/>
   </entry>
   <entry>
-    <title>iOS 26.3.1 (23D771330a)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-03-17:iOS-26.3.1-23D771330a</id>
-    <published>2026-03-17T00:00:00.000Z</published>
-    <updated>2026-03-17T00:00:00.000Z</updated>
-    <summary>iOS 26.3.1 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 26.3.1 (23D771330a)</p><ul><li>发布日期: 2026/3/17</li><li>类型: 安全响应 (RSR)</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="iOS" label="iOS"/>
-  </entry>
-  <entry>
     <title>macOS 27.0 (26A5428)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-09-15:macOS-27.0-26A5428</id>
@@ -37,26 +27,6 @@
     <updated>2026-09-15T00:00:00.000Z</updated>
     <summary>macOS 27.0 更新</summary>
     <content type="html"><![CDATA[<p><strong>macOS</strong> 27.0 (26A5428)</p><ul><li>发布日期: 2026/9/15</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="macOS" label="macOS"/>
-  </entry>
-  <entry>
-    <title>macOS 26.3.2 (25D771400a)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-03-17:macOS-26.3.2-25D771400a</id>
-    <published>2026-03-17T00:00:00.000Z</published>
-    <updated>2026-03-17T00:00:00.000Z</updated>
-    <summary>macOS 26.3.2 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 26.3.2 (25D771400a)</p><ul><li>发布日期: 2026/3/17</li><li>类型: 安全响应 (RSR)</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="macOS" label="macOS"/>
-  </entry>
-  <entry>
-    <title>macOS 26.3.1 (25D771280a)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-03-17:macOS-26.3.1-25D771280a</id>
-    <published>2026-03-17T00:00:00.000Z</published>
-    <updated>2026-03-17T00:00:00.000Z</updated>
-    <summary>macOS 26.3.1 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 26.3.1 (25D771280a)</p><ul><li>发布日期: 2026/3/17</li><li>类型: 安全响应 (RSR)</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="macOS" label="macOS"/>
   </entry>
   <entry>

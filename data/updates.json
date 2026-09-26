@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-09-26T13:57:44.725Z",
+  "lastChecked": "2026-09-26T14:11:56.533Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -11,16 +11,6 @@
           "postingDate": "2026-09-14",
           "title": "iOS 27.0",
           "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:57:44.725Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "26.3.1",
-          "build": "23D771330a",
-          "postingDate": "2026-03-17",
-          "title": "iOS 26.3.1 (a)",
-          "_updateType": "security-response",
           "_firmwareUrls": {},
           "firstSeen": "2026-09-26T13:57:44.725Z"
         }
@@ -36,26 +26,6 @@
           "postingDate": "2026-09-15",
           "title": "macOS 27.0",
           "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:57:44.725Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "26.3.2",
-          "build": "25D771400a",
-          "postingDate": "2026-03-17",
-          "title": "macOS 26.3.2 (a)",
-          "_updateType": "security-response",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:57:44.725Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "26.3.1",
-          "build": "25D771280a",
-          "postingDate": "2026-03-17",
-          "title": "macOS 26.3.1 (a)",
-          "_updateType": "security-response",
           "_firmwareUrls": {},
           "firstSeen": "2026-09-26T13:57:44.725Z"
         }
@@ -119,19 +89,10 @@
   },
   "_intervalStats": {
     "ios": {
-      "avgDays": 181,
-      "daysSinceLast": 12,
-      "history": [
-        181
-      ]
+      "daysSinceLast": 12
     },
     "macos": {
-      "avgDays": 91,
-      "daysSinceLast": 11,
-      "history": [
-        182,
-        0
-      ]
+      "daysSinceLast": 11
     },
     "watchos": {
       "avgDays": 0,
