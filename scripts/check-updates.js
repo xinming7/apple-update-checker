@@ -586,7 +586,68 @@ function enrichWithMesu(updatesByPlatform, mesuByPlatform) {
   }
 }
 
-/** 从 mesu 结果收集所有平台的 beta 版本，过滤掉已在 gdmf 中出现的 version 和旧版本 */
+// ─── Beta 检测：Apple Developer Docs ─────────────────────────
+
+/** 平台 key → Developer Docs 端点 slug */
+const DEV_DOCS_SLUGS = {
+  ios: 'ios-ipados',
+  macos: 'macos',
+  watchos: 'watchos',
+  tvos: 'tvos',
+  visionos: 'visionos'
+};
+
+/**
+ * 从 Apple Developer Docs 提取各平台的最新 Beta 版本。
+ * Developer Docs 的 release-notes JSON 中包含标题如 "iOS & iPadOS 27.2 Beta 2 Release Notes"，
+ * 是目前唯一可靠的公开 Beta 数据源。
+ * 返回 [ { platform, version, betaNumber }, ... ]
+ */
+async function fetchBetaFromDevDocs() {
+  console.log('Fetching Beta info from Developer Docs...');
+  const results = [];
+
+  const tasks = PLATFORM_KEYS.map(async (key) => {
+    const slug = DEV_DOCS_SLUGS[key];
+    if (!slug) return;
+    const url = `https://developer.apple.com/tutorials/data/documentation/${slug}-release-notes.json`;
+    try {
+      const response = await fetchWithRetry(url, {
+        headers: { 'Accept': 'application/json' }
+      });
+      const text = await response.text();
+      // 匹配 "iOS & iPadOS 27.2 Beta 2 Release Notes" 等标题
+      const platformName = ALL_PLATFORMS[key].name;
+      // 构建匹配模式：支持 "iOS & iPadOS", "macOS", "watchOS" 等
+      // macOS 标题含代号如 "macOS 27.2 Golden Gate Beta 2"，需要跳过中间的代号
+      const pattern = new RegExp(
+        `(?:iOS\\s*(?:&\\s*iPadOS)?|${platformName})\\s+(\\d+\\.\\d+(?:\\.\\d+)?)\\s+[A-Za-z\\s]*?Beta\\s*(\\d+)?`,
+        'gi'
+      );
+      let best = null;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const version = match[1];
+        const betaNum = match[2] ? parseInt(match[2], 10) : 0;
+        if (!best || compareUpdatesDesc({ version }, { version: best.version }) < 0 ||
+            (version === best.version && betaNum > best.betaNumber)) {
+          best = { platform: platformName, version, betaNumber: betaNum };
+        }
+      }
+      if (best) {
+        results.push(best);
+        console.log(`  ${platformName}: ${best.version} Beta ${best.betaNumber}`);
+      }
+    } catch (err) {
+      console.warn(`  Developer Docs fetch failed for ${key}: ${err.message}`);
+    }
+  });
+
+  await Promise.allSettled(tasks);
+  return results;
+}
+
+/** [DISABLED] 旧版 mesu Beta 收集（保留代码，待找到可靠数据源后启用） */
 function collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform) {
   const all = [];
   for (const [key, mesuResult] of Object.entries(mesuByPlatform)) {
@@ -872,37 +933,15 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
     }
   }
 
-  // Beta 版本区域
+  // Beta 版本区域（数据来自 Apple Developer Docs）
   if (betaUpdates && betaUpdates.length > 0) {
     if (!msg) msg += `🍎 <b>Apple Beta 版本检测</b>\n\n`;
     msg += `🧪 <b>当前 Beta 版本</b>\n\n`;
 
-    // 按平台分组
-    const betaGroups = [];
-    const betaGroupMap = new Map();
     for (const u of betaUpdates) {
-      if (!betaGroupMap.has(u.platform)) {
-        betaGroupMap.set(u.platform, []);
-        betaGroups.push(u.platform);
-      }
-      betaGroupMap.get(u.platform).push(u);
-    }
-
-    for (const platform of betaGroups) {
-      const updates = betaGroupMap.get(platform);
-      for (const u of updates) {
-        msg += `🧪 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
-        if (u.build) msg += ` (${escapeHtml(u.build)})`;
-        if (u.downloadSize) msg += ` [${formatSize(u.downloadSize)}]`;
-        msg += `\n`;
-        if (u.postingDate) {
-          msg += `📅 发布日期: ${fmtDate(u.postingDate)}\n`;
-        }
-        if (u._firmwareUrls && u._firmwareUrls.apple) {
-          msg += `⬇️ <a href="${escapeHtml(u._firmwareUrls.apple)}">Apple 官方固件下载</a>\n`;
-        }
-        msg += `\n`;
-      }
+      msg += `🧪 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
+      if (u.betaNumber) msg += ` Beta ${u.betaNumber}`;
+      msg += `\n\n`;
     }
   }
 
@@ -1032,14 +1071,8 @@ async function main() {
   });
   enrichWithMesu(updatesByPlatform, mesuByPlatform);
 
-  // [DISABLED] Beta 检测：当前数据源（mesu/gdmf）不含真实 Public Beta 数据，
-  // mesu 的 "Beta" 条目实为 iPadOS 长期支持版内部标识，非真正的 Public Beta。
-  // 待找到可靠数据源后取消注释启用。
-  // const betaUpdates = collectBetaUpdates(mesuByPlatform, allKnownVersions, updatesByPlatform);
-  // if (betaUpdates.length > 0) {
-  //   console.log(`  Beta: ${betaUpdates.map(u => `${u.platform} ${u.version} (${u.build})`).join(', ')}`);
-  // }
-  const betaUpdates = [];
+  // Beta 检测：从 Apple Developer Docs 提取各平台最新 Beta 版本
+  const betaUpdates = await fetchBetaFromDevDocs();
 
   // XProtect
   const xpResult = await checkXProtectUpdate(dataDir, pmvRaw).catch(() => null);
