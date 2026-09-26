@@ -121,7 +121,8 @@ node scripts/generate-rss.js
 ```
 apple-update-checker/
 ├── scripts/
-│   ├── check-updates.js      # 系统更新检查（主源 gdmf/pmv + 辅助 mesu）
+│   ├── utils.js              # 共享工具函数（重试、截断、格式化等）
+│   ├── check-updates.js      # 系统更新检查（主源 gdmf/pmv + 辅助 mesu + Beta Dev Docs）
 │   ├── security-scanner.js   # 安全公告扫描（CVE 追踪、release notes）
 │   ├── generate-rss.js       # RSS Feed 生成器（Atom 格式）
 │   └── daily-digest.js       # Update Hub 每日汇总（Telegram 推送）

@@ -9,13 +9,32 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * 带重试的 fetch。
+ * 当 options.curlFallback 为 true 时，优先用 curl（系统证书库）请求，fetch 作 fallback。
+ * 适用于 Apple CDN 等 Node.js undici 无法信任证书链的场景。
+ */
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+  const { curlFallback, ...fetchOptions } = options || {};
+
+  const doFetch = (u, opts) => fetch(u, {
+    ...opts,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      });
+      let response;
+      if (curlFallback) {
+        try {
+          response = curlGet(url, fetchOptions);
+        } catch (curlErr) {
+          console.error(`  curl failed: ${curlErr.message}, trying fetch...`);
+          response = await doFetch(url, fetchOptions);
+        }
+      } else {
+        response = await doFetch(url, fetchOptions);
+      }
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response;
     } catch (err) {
@@ -24,6 +43,39 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
       else throw err;
     }
   }
+}
+
+/**
+ * curl 获取（execFileSync 数组参数，防 shell 注入）
+ * 仅在 curlFallback 模式下被 fetchWithRetry 内部调用
+ */
+let execFileSync;
+function curlGet(urlStr, options = {}) {
+  if (!execFileSync) execFileSync = require('child_process').execFileSync;
+  const args = ['-sSk', '--connect-timeout', '15', '--max-time', '30'];
+  const method = options.method || 'GET';
+  args.push('-X', method);
+  for (const [k, v] of Object.entries(options.headers || {})) {
+    args.push('-H', `${k}: ${v}`);
+  }
+  if (options.body) args.push('-d', String(options.body));
+  args.push(urlStr);
+
+  const stdout = execFileSync('curl', args, {
+    encoding: 'utf-8',
+    timeout: FETCH_TIMEOUT_MS + 5000,
+    maxBuffer: 5 * 1024 * 1024,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  if (!stdout || !stdout.trim()) {
+    throw new Error('curl returned empty response');
+  }
+  return {
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve(JSON.parse(stdout)),
+    text: () => Promise.resolve(stdout),
+  };
 }
 
 function escapeHtml(s) {

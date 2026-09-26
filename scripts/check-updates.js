@@ -2,18 +2,17 @@
 // Apple Update Checker - GitHub Actions Script
 // 检查苹果系统更新并保存到仓库
 //
-// 数据源架构（2026-09 修复）：
+// 数据源架构：
 //   主源  gdmf.apple.com/v2/pmv（GET JSON）：全平台版本 / Build / 发布日期 / RSR 标记
 //   辅助  mesu.apple.com OTA feed（XML plist）：补充固件下载链接与大小（仅 iOS/watchOS/tvOS 有）
-// 旧版脚本直接解析 mesu XML，存在三个问题：正则无法处理嵌套结构、
-// feed 无日期字段、watchOS/tvOS/macOS/visionOS 的 URL 已失效（403）。
+//   Beta  Apple Developer Docs JSON 端点：提取各平台最新 Beta 版本
+// curl fallback：Apple CDN 证书链不被 Node.js fetch/undici 信任，需 curl 使用系统证书库
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const {
   sleep, escapeHtml, mdCell, formatSize, updateTypeLabelTg,
-  fmtDate, truncateHtmlMessage, FETCH_TIMEOUT_MS
+  fmtDate, truncateHtmlMessage, FETCH_TIMEOUT_MS, fetchWithRetry
 } = require('./utils');
 
 // 平台定义
@@ -45,70 +44,8 @@ const PLATFORM_KEYS = Object.keys(ALL_PLATFORMS).filter(
   key => !PLATFORM_FILTER || PLATFORM_FILTER.includes(key)
 );
 
-// ─── curl 获取（防注入：execFileSync 数组参数）────────────────
-
-/**
- * 使用 curl 获取数据（Node.js fetch/undici 和 native https 均无法信任
- * Apple CDN 证书链，curl 使用系统证书库可正常工作）
- */
-function curlGet(urlStr, options = {}) {
-  return new Promise((resolve, reject) => {
-    try {
-      const args = ['-sSk', '--connect-timeout', '15', '--max-time', '30'];
-      const method = options.method || 'GET';
-      args.push('-X', method);
-      for (const [k, v] of Object.entries(options.headers || {})) {
-        args.push('-H', `${k}: ${v}`);
-      }
-      if (options.body) args.push('-d', String(options.body));
-      args.push(urlStr);
-
-      const stdout = execFileSync('curl', args, {
-        encoding: 'utf-8',
-        timeout: FETCH_TIMEOUT_MS + 5000,
-        maxBuffer: 5 * 1024 * 1024,
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      if (!stdout || !stdout.trim()) {
-        reject(new Error('curl returned empty response'));
-        return;
-      }
-      resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(JSON.parse(stdout)),
-        text: () => Promise.resolve(stdout),
-      });
-    } catch (err) {
-      const stderr = err.stderr ? String(err.stderr).trim() : '';
-      reject(new Error(`curl failed (exit ${err.status || '?'}): ${stderr || err.message}`));
-    }
-  });
-}
-
-// fetchWithRetry 带 curl fallback（check-updates 特有：Apple CDN 需要 curl）
-async function fetchWithRetry(url, options, retries) {
-  for (let i = 0; i < (retries || 3); i++) {
-    try {
-      let response;
-      try {
-        response = await curlGet(url, options);
-      } catch (curlErr) {
-        console.error(`  curl failed: ${curlErr.message}, trying fetch...`);
-        response = await fetch(url, {
-          ...options,
-          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-        });
-      }
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response;
-    } catch (err) {
-      console.error(`  Attempt ${i + 1}/${retries || 3} failed: ${err.message}`);
-      if (i < (retries || 3) - 1) await sleep(2000 * (i + 1));
-      else throw err;
-    }
-  }
-}
+// check-updates.js 使用 utils 的 fetchWithRetry，传 { curlFallback: true }
+// 因为 Apple CDN (gdmf/mesu) 证书链不被 Node.js fetch 信任，需 curl 系统证书库
 
 /**
  * 版本号归一化：mesu OTA feed 的 OSVersion 带 "9.9." 打码前缀
@@ -262,7 +199,7 @@ function parsePmvData(data) {
     const deduped = [...byVersion.values()];
 
     // 过滤旧版本线：只保留最新主版本线
-    // RSR 也过滤：只保留比最新正式版更高的版本（如27.x有RSR就不保留26.x的RSR）
+    // RSR 也过滤：只保留比最新正式版更新的 RSR（如正式版已到 27.x，则丢弃 26.x 的 RSR）
     const rsr = deduped.filter(u => u._updateType === 'security-response');
     const nonRsr = deduped.filter(u => u._updateType !== 'security-response');
 
@@ -271,7 +208,7 @@ function parsePmvData(data) {
       // 取最新版本的主版本号（如27.0 → 27）
       const latestMajor = semverKey(nonRsr[0].version)[0];
       const latestLine = nonRsr.filter(u => semverKey(u.version)[0] === latestMajor);
-      // RSR 只保留比最新正式版更高的版本（完整版本比较）
+      // 过滤掉比最新正式版更旧的 RSR（compareUpdatesDesc(a,b)<0 表示 a 比 b 更新）
       const latestStableVer = nonRsr[0].version;
       const newerRsr = rsr.filter(u => compareUpdatesDesc(u, { version: latestStableVer }) < 0);
       filtered = [...latestLine, ...newerRsr];
@@ -294,6 +231,7 @@ function parsePmvData(data) {
 async function fetchPmvUpdates() {
   console.log('Fetching gdmf/pmv catalog...');
   const response = await fetchWithRetry(PMV_URL, {
+    curlFallback: true,
     headers: {
       'User-Agent': 'SoftwareUpdate (unknown version) CFNetwork/1408.0.4 Darwin/22.5.0',
       'Accept': 'application/json'
@@ -471,6 +409,7 @@ async function fetchMesuUpdates(platformKey) {
   if (!url) return null;
   try {
     const response = await fetchWithRetry(url, {
+      curlFallback: true,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
       }
@@ -529,6 +468,7 @@ async function fetchBetaFromDevDocs() {
     const url = `https://developer.apple.com/tutorials/data/documentation/${slug}-release-notes.json`;
     try {
       const response = await fetchWithRetry(url, {
+        curlFallback: true,
         headers: { 'Accept': 'application/json' }
       });
       const text = await response.text();
@@ -580,6 +520,7 @@ async function fetchXProtectVersion(rawData) {
     let data = rawData;
     if (!data) {
       const response = await fetchWithRetry(PMV_URL, {
+        curlFallback: true,
         headers: {
           'User-Agent': 'SoftwareUpdate (unknown version) CFNetwork/1408.0.4 Darwin/22.5.0',
           'Accept': 'application/json'
@@ -913,33 +854,37 @@ async function reportToUpdateHub(updates) {
     body: JSON.stringify({ name: PROJECT, label: 'Apple 系统更新', type: 'version', icon: '🍎' }),
   });
 
-  for (const u of updates) {
-    try {
-      const payload = {
-        version: u.version,
-        title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
-        body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
-        status: 'changed',
-        extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
-      };
-      const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
-        method: 'POST',
-        headers,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-        body: JSON.stringify(payload),
-      });
-      let res = await post();
-      if (res.status === 404) {
-        // 项目未注册：自动注册后重试一次，避免上报静默丢失
-        await registerProject();
-        res = await post();
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const result = await res.json().catch(() => ({}));
-      console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
-    } catch (err) {
-      console.error(`Update Hub report failed: ${err.message}`);
+  // 并行上报所有更新，避免串行等待
+  const results = await Promise.allSettled(updates.map(async (u) => {
+    const payload = {
+      version: u.version,
+      title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
+      body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
+      status: 'changed',
+      extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
+    };
+    const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
+      method: 'POST',
+      headers,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      body: JSON.stringify(payload),
+    });
+    let res = await post();
+    if (res.status === 404) {
+      // 项目未注册：自动注册后重试一次，避免上报静默丢失
+      await registerProject();
+      res = await post();
     }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json().catch(() => ({}));
+    console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
+    return result;
+  }));
+
+  // 统计失败数
+  const failed = results.filter(r => r.status === 'rejected');
+  if (failed.length > 0) {
+    console.error(`Update Hub: ${failed.length}/${updates.length} reports failed`);
   }
 }
 
@@ -1046,6 +991,11 @@ async function main() {
     output.xprotect = prevData.xprotect;
   }
 
+  // Beta 版本信息持久化
+  if (betaUpdates && betaUpdates.length > 0) {
+    output.betaUpdates = betaUpdates;
+  }
+
   // 检测变更
   const newUpdates = detectChanges(output, dataDir);
   if (xpResult && newUpdates) {
@@ -1129,6 +1079,17 @@ function generateMarkdown(data) {
   // XProtect 状态
   if (data.xprotect) {
     md += `| 🛡️ XProtect | ${data.xprotect.version} | ${data.xprotect.version} | 安全 | - | ${data.xprotect.date || '-'} | - |\n`;
+  }
+
+  // Beta 版本状态
+  if (data.betaUpdates && data.betaUpdates.length > 0) {
+    md += `\n## 🧪 Beta 版本\n\n`;
+    md += `| 平台 | Beta 版本 |\n`;
+    md += `|------|----------|\n`;
+    for (const b of data.betaUpdates) {
+      const betaVer = `${b.version}${b.betaNumber ? ` Beta ${b.betaNumber}` : ''}`;
+      md += `| ${mdCell(b.platform)} | ${mdCell(betaVer)} |\n`;
+    }
   }
 
   // 更新间隔统计

@@ -58,7 +58,8 @@ function parseSecurityPage(html) {
 
     // 识别平台
     let platform = 'Unknown';
-    if (/iOS|iPhone|iPad/i.test(title)) platform = 'iOS';
+    if (/iPadOS/i.test(title)) platform = 'iOS';
+    else if (/iOS|iPhone/i.test(title)) platform = 'iOS';
     else if (/macOS|Mac/i.test(title)) platform = 'macOS';
     else if (/watchOS/i.test(title)) platform = 'watchOS';
     else if (/tvOS|Apple TV/i.test(title)) platform = 'tvOS';

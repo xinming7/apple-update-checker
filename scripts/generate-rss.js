@@ -79,8 +79,31 @@ function generateAtomFeed(data) {
   </entry>\n`;
   }
 
+  // Beta 版本
+  if (data.betaUpdates && data.betaUpdates.length > 0) {
+    for (const b of data.betaUpdates) {
+      const betaVer = `${b.version}${b.betaNumber ? ` Beta ${b.betaNumber}` : ''}`;
+      const title = `${b.platform} ${betaVer}`;
+      const published = formatDate(data.lastChecked);
+      const id = `tag:apple-update-checker,${published.split('T')[0]}:${b.platform}-beta-${b.version}`;
+      const content = `<p><strong>${escapeXml(b.platform)}</strong> ${escapeXml(betaVer)}</p><p>类型: Beta 版本</p>`;
+
+      entries += `  <entry>
+    <title>${escapeXml(title)}</title>
+    <link href="${REPO_URL}/blob/main/UPDATE_STATUS.md"/>
+    <id>${id}</id>
+    <published>${published}</published>
+    <updated>${published}</updated>
+    <summary>${escapeXml(b.platform)} ${escapeXml(betaVer)}</summary>
+    <content type="html"><![CDATA[${content}]]></content>
+    <category term="${escapeXml(b.platform)}" label="${escapeXml(b.platform)}"/>
+  </entry>\n`;
+    }
+  }
+
   // <updated> 取所有 entry 中最新的发布日期，避免无更新时每日抖动
-  let latestDate = now;
+  // fallback 用 lastChecked 而非 now，避免每次 Actions 运行都改变 <updated>
+  let latestDate = data.lastChecked || now;
   for (const platform of Object.values(data.platforms || {})) {
     for (const u of (platform.updates || [])) {
       const d = u.postingDate || u.firstSeen;
