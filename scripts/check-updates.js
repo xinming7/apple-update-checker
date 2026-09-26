@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 // 平台定义
 const ALL_PLATFORMS = {
@@ -49,13 +50,50 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * 原生 https 请求（Node.js fetch/undici 与 Apple CDN 存在兼容性问题，
+ * 表现为连接重置或自签名证书错误；原生 https 模块可正常工作）
+ */
+function httpsGet(urlStr, options = {}) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlStr);
+    const req = https.get({
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: 'GET',
+      headers: options.headers || {},
+      timeout: FETCH_TIMEOUT_MS,
+    }, (res) => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const body = Buffer.concat(chunks);
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          json: () => Promise.resolve(JSON.parse(body.toString())),
+          text: () => Promise.resolve(body.toString()),
+        });
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
+  });
+}
+
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url, {
-        ...options,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      });
+      let response;
+      try {
+        response = await httpsGet(url, options);
+      } catch (nativeErr) {
+        console.error(`  https module failed: ${nativeErr.message}, trying fetch...`);
+        response = await fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+      }
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response;
     } catch (err) {
