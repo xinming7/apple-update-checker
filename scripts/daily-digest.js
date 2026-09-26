@@ -8,7 +8,9 @@ const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 function escapeHtml(s) {
   if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 const RETRY_DELAY_MS = 2000;

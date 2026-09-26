@@ -8,6 +8,7 @@ const path = require('path');
 const APPLE_SECURITY_URL = 'https://support.apple.com/en-us/100100';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
+const FETCH_TIMEOUT_MS = 30000;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -16,7 +17,10 @@ function sleep(ms) {
 async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response;
     } catch (err) {
@@ -44,6 +48,11 @@ async function fetchSecurityUpdates() {
 
   const html = await response.text();
   return parseSecurityPage(html);
+}
+
+/** Markdown 单元格安全化：转义竖线与换行，防止破坏表格结构 */
+function mdCell(v) {
+  return String(v == null ? '-' : v).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ').trim() || '-';
 }
 
 function parseSecurityPage(html) {
@@ -333,7 +342,7 @@ function generateSecurityMarkdown(data) {
     md += `| 平台 | 版本 | CVE 数量 | 安全公告 |\n`;
     md += `|------|------|----------|----------|\n`;
     for (const m of data.localMatches) {
-      md += `| ${m.platform} | ${m.version} | ${m.cveCount} | [查看](${m.securityUrl}) |\n`;
+      md += `| ${mdCell(m.platform)} | ${mdCell(m.version)} | ${m.cveCount} | [查看](${m.securityUrl}) |\n`;
     }
     md += `\n`;
   }
@@ -342,10 +351,10 @@ function generateSecurityMarkdown(data) {
   if (data.recentDetails && data.recentDetails.length > 0) {
     md += `## 📋 最近安全公告详情\n\n`;
     for (const entry of data.recentDetails) {
-      md += `### ${entry.title}\n\n`;
-      md += `- **平台**: ${entry.platform}\n`;
-      if (entry.version) md += `- **版本**: ${entry.version}\n`;
-      if (entry.date) md += `- **发布日期**: ${entry.date}\n`;
+      md += `### ${mdCell(entry.title)}\n\n`;
+      md += `- **平台**: ${mdCell(entry.platform)}\n`;
+      if (entry.version) md += `- **版本**: ${mdCell(entry.version)}\n`;
+      if (entry.date) md += `- **发布日期**: ${mdCell(entry.date)}\n`;
       md += `- **CVE 数量**: ${entry.cveCount}\n`;
       md += `- **详情**: [${entry.url}](${entry.url})\n`;
 

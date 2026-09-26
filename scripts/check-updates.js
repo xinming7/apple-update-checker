@@ -91,6 +91,11 @@ function fmtDate(isoStr) {
   return d.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
 }
 
+/** Markdown 单元格安全化：转义竖线与换行（外部数据进表格前调用） */
+function mdCell(v) {
+  return String(v == null ? '-' : v).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ').trim() || '-';
+}
+
 function formatSize(bytes) {
   if (bytes > 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
   if (bytes > 1048576) return `${(bytes / 1048576).toFixed(0)} MB`;
@@ -137,6 +142,7 @@ function truncateHtmlMessage(msg, maxLen = 4096) {
   let cut = msg.slice(0, maxLen - 30);
   cut = cut.replace(/<[^>]*$/, '');            // 去掉被截断的半个标签
   cut = cut.replace(/<a\s[^>]*>[^<]*$/i, '');  // 去掉没有闭合的 <a> 文本
+  cut = cut.replace(/&[#a-zA-Z0-9]*$/, '');    // 去掉被截断的半个 HTML 实体
   return cut + '\n\n... (内容过长已截断)';
 }
 
@@ -287,7 +293,8 @@ async function fetchPmvUpdates() {
       'Accept': 'application/json'
     }
   });
-  return parsePmvData(await response.json());
+  const raw = await response.json();
+  return { raw, updates: parsePmvData(raw) };
 }
 
 // ─── 数据源 2：mesu OTA feed（辅助：固件链接/大小） ─────────────
@@ -496,16 +503,20 @@ function enrichWithMesu(updatesByPlatform, mesuByPlatform) {
  * 需接入 Pallas（gdmf/v2/assets + XProtectPlistConfigData 的 AssetAudience）。
  * 这里保留检测入口：若将来 pmv 响应出现 XProtect 字段即可自动生效。
  */
-async function fetchXProtectVersion() {
+async function fetchXProtectVersion(rawData) {
   console.log('Checking XProtect version...');
   try {
-    const response = await fetchWithRetry(PMV_URL, {
-      headers: {
-        'User-Agent': 'SoftwareUpdate (unknown version) CFNetwork/1408.0.4 Darwin/22.5.0',
-        'Accept': 'application/json'
-      }
-    });
-    const data = await response.json();
+    // 复用主流程抓取的 pmv 原始数据；没有才单独抓一次
+    let data = rawData;
+    if (!data) {
+      const response = await fetchWithRetry(PMV_URL, {
+        headers: {
+          'User-Agent': 'SoftwareUpdate (unknown version) CFNetwork/1408.0.4 Darwin/22.5.0',
+          'Accept': 'application/json'
+        }
+      });
+      data = await response.json();
+    }
     const hit = findXProtectEntry(data);
     if (hit) {
       console.log(`  XProtect version: ${hit.version}${hit.date ? ` (${hit.date})` : ''}`);
@@ -554,8 +565,8 @@ function findXProtectEntry(node, depth = 0) {
 /**
  * 检查 XProtect 是否有新版本
  */
-async function checkXProtectUpdate(dataDir) {
-  const xp = await fetchXProtectVersion();
+async function checkXProtectUpdate(dataDir, rawData) {
+  const xp = await fetchXProtectVersion(rawData);
   if (!xp) return null;
 
   const prevFile = path.join(dataDir, 'xprotect.json');
@@ -771,23 +782,39 @@ async function reportToUpdateHub(updates) {
     console.log('Update Hub not configured, skipping.');
     return;
   }
+  const PROJECT = 'ios-update-check';
+  const headers = {
+    'Authorization': `Bearer ${hubToken}`,
+    'Content-Type': 'application/json',
+  };
+  const registerProject = () => fetch(`${hubUrl}/api/projects`, {
+    method: 'POST',
+    headers,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    body: JSON.stringify({ name: PROJECT, label: 'Apple 系统更新', type: 'version', icon: '🍎' }),
+  });
+
   for (const u of updates) {
     try {
-      const res = await fetch(`${hubUrl}/api/projects/ios-update-check/updates`, {
+      const payload = {
+        version: u.version,
+        title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
+        body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
+        status: 'changed',
+        extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
+      };
+      const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${hubToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-        body: JSON.stringify({
-          version: u.version,
-          title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
-          body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
-          status: 'changed',
-          extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
-        }),
+        body: JSON.stringify(payload),
       });
+      let res = await post();
+      if (res.status === 404) {
+        // 项目未注册：自动注册后重试一次，避免上报静默丢失
+        await registerProject();
+        res = await post();
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json().catch(() => ({}));
       console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
@@ -824,9 +851,12 @@ async function main() {
 
   // 主源：gdmf/pmv（含版本/Build/发布日期/RSR）
   let updatesByPlatform = null;
+  let pmvRaw = null;
   let pmvError = null;
   try {
-    updatesByPlatform = await fetchPmvUpdates();
+    const pmv = await fetchPmvUpdates();
+    updatesByPlatform = pmv.updates;
+    pmvRaw = pmv.raw;
   } catch (err) {
     pmvError = err;
     console.error(`ERROR: fetch gdmf/pmv failed: ${err.message}`);
@@ -844,7 +874,7 @@ async function main() {
   enrichWithMesu(updatesByPlatform, mesuByPlatform);
 
   // XProtect
-  const xpResult = await checkXProtectUpdate(dataDir).catch(() => null);
+  const xpResult = await checkXProtectUpdate(dataDir, pmvRaw).catch(() => null);
 
   // 构建输出
   const now = new Date().toISOString();
@@ -963,7 +993,7 @@ function generateMarkdown(data) {
       const size = latest.downloadSize ? formatSize(latest.downloadSize) : '-';
       const stat = intervalStats[key];
       const daysAgo = stat?.daysSinceLast != null ? `${stat.daysSinceLast}天` : '-';
-      md += `| ${platform.name} | ${latest.version} | ${latest.build || '-'} | ${typeLabel} | ${size} | ${date} | ${daysAgo} |\n`;
+      md += `| ${mdCell(platform.name)} | ${mdCell(latest.version)} | ${mdCell(latest.build)} | ${typeLabel} | ${size} | ${mdCell(date)} | ${daysAgo} |\n`;
     } else if (platform._fetchError) {
       md += `| ${platform.name} | ⚠️ 抓取失败 | - | - | - | - | - |\n`;
     } else {
