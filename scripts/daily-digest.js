@@ -6,35 +6,7 @@ const HUB_TOKEN = process.env.UPDATE_HUB_TOKEN;
 const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-function escapeHtml(s) {
-  if (!s) return '';
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-const RETRY_DELAY_MS = 2000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function fetchWithRetry(url, options, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const res = await fetch(url, {
-        ...options,
-        signal: AbortSignal.timeout(30000),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res;
-    } catch (err) {
-      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
-      if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
-      else throw err;
-    }
-  }
-}
+const { escapeHtml, truncateHtmlMessage, fetchWithRetry } = require('./utils');
 
 async function fetchDigest() {
   const res = await fetchWithRetry(`${HUB_URL}/api/daily-digest`, {
@@ -88,11 +60,7 @@ function formatMessage(digest) {
 }
 
 async function sendTelegram(text) {
-  // 截断放在标签追加之后，上限 4096
-  const MAX_LEN = 4096;
-  if (text.length > MAX_LEN) {
-    text = text.slice(0, MAX_LEN - 30) + '\n\n... (内容过长已截断)';
-  }
+  text = truncateHtmlMessage(text);
   const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

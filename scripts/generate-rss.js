@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { updateTypeLabel, formatSize } = require('./utils');
 
 const REPO_URL = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
 const FEED_TITLE = 'Apple System Updates';
@@ -99,23 +100,6 @@ function generateAtomFeed(data) {
     <name>Apple Update Checker</name>
   </author>
 ${entries}</feed>`;
-}
-
-function updateTypeLabel(type) {
-  const labels = {
-    'major': '大版本更新',
-    'minor': '小版本更新',
-    'security-response': '安全响应 (RSR)',
-    'security': '安全补丁',
-    'xprotect': 'XProtect 更新'
-  };
-  return labels[type] || '更新';
-}
-
-function formatSize(bytes) {
-  if (bytes > 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
-  if (bytes > 1048576) return `${(bytes / 1048576).toFixed(0)} MB`;
-  return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
 async function main() {

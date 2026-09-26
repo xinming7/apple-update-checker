@@ -4,32 +4,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { fetchWithRetry, mdCell } = require('./utils');
 
 const APPLE_SECURITY_URL = 'https://support.apple.com/en-us/100100';
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
-const FETCH_TIMEOUT_MS = 30000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response;
-    } catch (err) {
-      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
-      if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
-      else throw err;
-    }
-  }
-}
 
 /**
  * 从 Apple 安全公告页面提取更新条目
@@ -48,11 +25,6 @@ async function fetchSecurityUpdates() {
 
   const html = await response.text();
   return parseSecurityPage(html);
-}
-
-/** Markdown 单元格安全化：转义竖线与换行，防止破坏表格结构 */
-function mdCell(v) {
-  return String(v == null ? '-' : v).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ').trim() || '-';
 }
 
 function parseSecurityPage(html) {
@@ -270,8 +242,11 @@ async function main() {
   const entries = await fetchSecurityUpdates();
 
   if (entries.length === 0) {
-    console.error('No security entries found — possible HTML parse failure or Apple page changed.');
-    process.exit(1);
+    console.warn('No security entries found — possible HTML parse failure or Apple page changed.');
+    // 输出空结果但不阻断 workflow（后续步骤仍需运行）
+    const outputFile = path.join(dataDir, 'security.json');
+    fs.writeFileSync(outputFile, JSON.stringify({ lastScanned: new Date().toISOString(), totalEntries: 0, recentDetails: [], localMatches: [] }, null, 2));
+    return;
   }
 
   // 获取最近 3 个条目的详细信息（并行请求）

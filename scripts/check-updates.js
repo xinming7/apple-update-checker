@@ -10,8 +10,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
+const {
+  sleep, escapeHtml, mdCell, formatSize, updateTypeLabelTg,
+  fmtDate, truncateHtmlMessage, FETCH_TIMEOUT_MS
+} = require('./utils');
 
 // 平台定义
 const ALL_PLATFORMS = {
@@ -42,14 +45,7 @@ const PLATFORM_KEYS = Object.keys(ALL_PLATFORMS).filter(
   key => !PLATFORM_FILTER || PLATFORM_FILTER.includes(key)
 );
 
-// 重试配置
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 2000;
-const FETCH_TIMEOUT_MS = 30000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+// ─── curl 获取（防注入：execFileSync 数组参数）────────────────
 
 /**
  * 使用 curl 获取数据（Node.js fetch/undici 和 native https 均无法信任
@@ -58,13 +54,16 @@ function sleep(ms) {
 function curlGet(urlStr, options = {}) {
   return new Promise((resolve, reject) => {
     try {
-      const headers = Object.entries(options.headers || {})
-        .map(([k, v]) => `-H '${k}: ${v}'`)
-        .join(' ');
+      const args = ['-sSk', '--connect-timeout', '15', '--max-time', '30'];
       const method = options.method || 'GET';
-      const body = options.body ? `-d '${String(options.body).replace(/'/g, "'\\''")}'` : '';
-      const cmd = `curl -sSk --connect-timeout 15 --max-time 30 -X ${method} ${headers} ${body} '${urlStr}'`;
-      const stdout = execSync(cmd, {
+      args.push('-X', method);
+      for (const [k, v] of Object.entries(options.headers || {})) {
+        args.push('-H', `${k}: ${v}`);
+      }
+      if (options.body) args.push('-d', String(options.body));
+      args.push(urlStr);
+
+      const stdout = execFileSync('curl', args, {
         encoding: 'utf-8',
         timeout: FETCH_TIMEOUT_MS + 5000,
         maxBuffer: 5 * 1024 * 1024,
@@ -87,8 +86,9 @@ function curlGet(urlStr, options = {}) {
   });
 }
 
-async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
-  for (let i = 0; i < retries; i++) {
+// fetchWithRetry 带 curl fallback（check-updates 特有：Apple CDN 需要 curl）
+async function fetchWithRetry(url, options, retries) {
+  for (let i = 0; i < (retries || 3); i++) {
     try {
       let response;
       try {
@@ -103,47 +103,11 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response;
     } catch (err) {
-      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
-      if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
+      console.error(`  Attempt ${i + 1}/${retries || 3} failed: ${err.message}`);
+      if (i < (retries || 3) - 1) await sleep(2000 * (i + 1));
       else throw err;
     }
   }
-}
-
-// ─── 通用工具 ──────────────────────────────────────────────────
-
-/**
- * HTML 转义（Telegram parse_mode=HTML、链接属性都需要）
- */
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-/**
- * 统一按北京时间显示日期，避免不同输出渠道日期差一天
- */
-function fmtDate(isoStr) {
-  if (!isoStr) return '-';
-  const d = new Date(isoStr);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
-}
-
-/** Markdown 单元格安全化：转义竖线与换行（外部数据进表格前调用） */
-function mdCell(v) {
-  return String(v == null ? '-' : v).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ').trim() || '-';
-}
-
-function formatSize(bytes) {
-  if (bytes > 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
-  if (bytes > 1048576) return `${(bytes / 1048576).toFixed(0)} MB`;
-  return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
 /**
@@ -178,18 +142,6 @@ function compareUpdatesDesc(a, b) {
   return String(b.build || '').localeCompare(String(a.build || ''));
 }
 
-/**
- * HTML 消息安全截断：避免把标签/属性拦腰切断导致 Telegram 解析失败
- */
-function truncateHtmlMessage(msg, maxLen = 4096) {
-  if (msg.length <= maxLen) return msg;
-  let cut = msg.slice(0, maxLen - 30);
-  cut = cut.replace(/<[^>]*$/, '');            // 去掉被截断的半个标签
-  cut = cut.replace(/<a\s[^>]*>[^<]*$/i, '');  // 去掉没有闭合的 <a> 文本
-  cut = cut.replace(/&[#a-zA-Z0-9]*$/, '');    // 去掉被截断的半个 HTML 实体
-  return cut + '\n\n... (内容过长已截断)';
-}
-
 // ─── 更新分类 ──────────────────────────────────────────────────
 
 /**
@@ -211,17 +163,7 @@ function classifyUpdate(version, build, title, versionExtra) {
   return 'minor';
 }
 
-function updateTypeLabel(type) {
-  const labels = {
-    'major': '🟢 大版本更新',
-    'minor': '🔵 小版本更新',
-    'security-response': '🔴 安全响应 (RSR)',
-    'security': '🟡 安全补丁',
-    'xprotect': '🛡️ XProtect 更新',
-    'beta': '🧪 Beta 版本'
-  };
-  return labels[type] || '📦 更新';
-}
+// updateTypeLabelTg 从 utils.js 导入
 
 /**
  * 生成固件下载链接
@@ -307,12 +249,8 @@ function parsePmvData(data) {
 
   // 去重：同版本只保留最新 Build（gdmf iOS 桶混装 iPhone/iPad/iPod 不同 Build）
   const result = {};
-  const allKnownVersions = {};  // 记录所有见过的 version（过滤前），用于 Beta 假阳性过滤
   for (const [key, updates] of Object.entries(buckets)) {
     updates.sort(compareUpdatesDesc);
-
-    // 记录所有 version
-    allKnownVersions[key] = new Set(updates.map(u => u.version));
 
     // 按 version 分组，每组保留最大 Build（降序排列后取第一个）
     const byVersion = new Map();
@@ -347,12 +285,11 @@ function parsePmvData(data) {
       console.log(`  ${ALL_PLATFORMS[key].name}: ${result[key].map(u => `${u.version} (${u.build})`).join(', ')}`);
     }
   }
-  return { updates: result, allKnownVersions };
+  return result;
 }
 
 /**
  * 抓取 gdmf/pmv JSON，按平台汇总最新版本
- * 返回 { raw, updates, allKnownVersions }
  */
 async function fetchPmvUpdates() {
   console.log('Fetching gdmf/pmv catalog...');
@@ -363,8 +300,8 @@ async function fetchPmvUpdates() {
     }
   });
   const raw = await response.json();
-  const { updates, allKnownVersions } = parsePmvData(raw);
-  return { raw, updates, allKnownVersions };
+  const updates = parsePmvData(raw);
+  return { raw, updates };
 }
 
 // ─── 数据源 2：mesu OTA feed（辅助：固件链接/大小） ─────────────
@@ -882,7 +819,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
       msg += `#${platform}更新\n\n`;
 
       for (const u of updates) {
-        const typeLabel = updateTypeLabel(u._updateType);
+        const typeLabel = updateTypeLabelTg(u._updateType);
         msg += `${typeLabel}\n`;
         msg += `📱 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
         if (u.build) msg += ` (${escapeHtml(u.build)})`;
@@ -1035,12 +972,10 @@ async function main() {
   let updatesByPlatform = null;
   let pmvRaw = null;
   let pmvError = null;
-  let allKnownVersions = {};
   try {
     const pmv = await fetchPmvUpdates();
     updatesByPlatform = pmv.updates;
     pmvRaw = pmv.raw;
-    allKnownVersions = pmv.allKnownVersions;
   } catch (err) {
     pmvError = err;
     console.error(`ERROR: fetch gdmf/pmv failed: ${err.message}`);
@@ -1135,7 +1070,7 @@ async function main() {
   for (const [key, platform] of Object.entries(output.platforms)) {
     const latest = platform.updates[0];
     if (latest) {
-      const type = updateTypeLabel(latest._updateType || 'minor');
+      const type = updateTypeLabelTg(latest._updateType || 'minor');
       console.log(`${platform.name}: ${latest.version}${latest.build ? ` (${latest.build})` : ''} ${type}`);
     } else if (platform._fetchError) {
       console.log(`${platform.name}: FETCH FAILED`);

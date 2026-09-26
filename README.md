@@ -32,6 +32,7 @@
 |--------|------|------|----------|
 | `gdmf.apple.com/v2/pmv` | JSON（主源） | 版本 / Build / PostingDate / RSR 标记 | 全 5 平台 |
 | `mesu.apple.com` OTA feed | XML plist（辅助） | 补充固件下载链接与大小 | iOS / watchOS / tvOS |
+| Apple Developer Docs | JSON（Beta） | Beta 版本检测 | 全 5 平台 |
 
 - gdmf/pmv 通过 `PublicAssetSets` 和 `PublicBackgroundSecurityImprovements` 分别提供正式版本和 RSR
 - mesu feed 的 `OSVersion` 带 `9.9.` 打码前缀（如 `9.9.27.0` 实为 `27.0`），脚本自动归一化
@@ -45,6 +46,13 @@
 | 🟢 | 大版本更新 | 纯主版本 `x` 或 `x.0` |
 | 🔵 | 小版本更新 | `x.y` / `x.y.z` |
 | 🛡️ | XProtect 更新 | macOS 安全签名（当前暂不可用，见下方说明） |
+| 🧪 | Beta 版本 | 从 Apple Developer Docs 提取（见下方说明） |
+
+### Beta 版本检测
+
+通过 Apple Developer Docs 的 release-notes JSON 端点检测各平台最新 Beta 版本。每个平台的页面标题包含版本信息（如 `iOS & iPadOS 27.2 Beta 2 Release Notes`），脚本自动提取并展示在 Telegram 通知的对应平台 Tag 下。
+
+覆盖平台：iOS、macOS、watchOS、tvOS、visionOS。
 
 ### XProtect 说明
 
