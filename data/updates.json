@@ -1,300 +1,31 @@
 {
-  "lastChecked": "2026-09-26T13:10:26.210Z",
+  "lastChecked": "2026-09-26T13:11:46.665Z",
   "platforms": {
     "ios": {
       "name": "iOS",
-      "updates": [
-        {
-          "platform": "iOS",
-          "version": "27.0",
-          "build": "24A9437",
-          "postingDate": "2026-09-14",
-          "title": "iOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "27.0",
-          "build": "24A6437",
-          "postingDate": "2026-09-14",
-          "title": "iOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {
-            "apple": "https://updates.cdn-apple.com/2026FallFCS/ef7b999c-218b-4a22-b247-80fe92366904/com_apple_MobileAsset_SoftwareUpdate/921482e5e543fe17d6ead8addee687b54d9cae709e7a171280e2ac76b1abeda4.aea"
-          },
-          "downloadSize": 8455716864,
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "27.0",
-          "build": "24A437",
-          "postingDate": "2026-09-14",
-          "title": "iOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {
-            "apple": "https://updates.cdn-apple.com/2026FallFCS/ef7b999c-218b-4a22-b247-80fe92366904/com_apple_MobileAsset_SoftwareUpdate/921482e5e543fe17d6ead8addee687b54d9cae709e7a171280e2ac76b1abeda4.aea"
-          },
-          "downloadSize": 8455716864,
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "26.7",
-          "build": "23H6024",
-          "postingDate": "2026-09-14",
-          "title": "iOS 26.7",
-          "_updateType": "minor",
-          "_firmwareUrls": {
-            "apple": "https://updates.cdn-apple.com/2026FallFCS/630a6c4e-a113-4147-9217-fd35545f18c3/com_apple_MobileAsset_SoftwareUpdate/1d45fd32d4ff545cf25dd88e1cdc8cb0b6f9fb4e.zip"
-          },
-          "downloadSize": 7924946914,
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "26.7",
-          "build": "23H24",
-          "postingDate": "2026-09-14",
-          "title": "iOS 26.7",
-          "_updateType": "minor",
-          "_firmwareUrls": {
-            "apple": "https://updates.cdn-apple.com/2026FallFCS/630a6c4e-a113-4147-9217-fd35545f18c3/com_apple_MobileAsset_SoftwareUpdate/1d45fd32d4ff545cf25dd88e1cdc8cb0b6f9fb4e.zip"
-          },
-          "downloadSize": 7924946914,
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        }
-      ]
+      "updates": [],
+      "_fetchError": true
     },
     "macos": {
       "name": "macOS",
-      "updates": [
-        {
-          "platform": "macOS",
-          "version": "27.0",
-          "build": "26A5428",
-          "postingDate": "2026-09-15",
-          "title": "macOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "27.0",
-          "build": "26A428",
-          "postingDate": "2026-09-15",
-          "title": "macOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "26.7",
-          "build": "25G229",
-          "postingDate": "2026-09-15",
-          "title": "macOS 26.7",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "26.3.2",
-          "build": "25D771400a",
-          "postingDate": "2026-03-17",
-          "title": "macOS 26.3.2 (a)",
-          "_updateType": "security-response",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "macOS",
-          "version": "26.3.1",
-          "build": "25D771280a",
-          "postingDate": "2026-03-17",
-          "title": "macOS 26.3.1 (a)",
-          "_updateType": "security-response",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        }
-      ]
+      "updates": [],
+      "_fetchError": true
     },
     "watchos": {
       "name": "watchOS",
-      "updates": [
-        {
-          "platform": "watchOS",
-          "version": "27.0.1",
-          "build": "24R365",
-          "postingDate": "2026-09-23",
-          "title": "watchOS 27.0.1",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "watchOS",
-          "version": "27.0",
-          "build": "24R6364",
-          "postingDate": "2026-09-23",
-          "title": "watchOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "watchOS",
-          "version": "27.0",
-          "build": "24R364",
-          "postingDate": "2026-09-23",
-          "title": "watchOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "watchOS",
-          "version": "26.6",
-          "build": "23U67",
-          "postingDate": "2026-09-23",
-          "title": "watchOS 26.6",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "watchOS",
-          "version": "26.6",
-          "build": "23U6067",
-          "postingDate": "2026-09-23",
-          "title": "watchOS 26.6",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        }
-      ]
+      "updates": [],
+      "_fetchError": true
     },
     "tvos": {
       "name": "tvOS",
-      "updates": [
-        {
-          "platform": "tvOS",
-          "version": "27.0",
-          "build": "24J6361",
-          "postingDate": "2026-09-14",
-          "title": "tvOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "tvOS",
-          "version": "27.0",
-          "build": "24J361",
-          "postingDate": "2026-09-14",
-          "title": "tvOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "tvOS",
-          "version": "26.6",
-          "build": "23L773",
-          "postingDate": "2026-09-14",
-          "title": "tvOS 26.6",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "tvOS",
-          "version": "26.6",
-          "build": "23L6773",
-          "postingDate": "2026-09-14",
-          "title": "tvOS 26.6",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        }
-      ]
+      "updates": [],
+      "_fetchError": true
     },
     "visionos": {
       "name": "visionOS",
-      "updates": [
-        {
-          "platform": "visionOS",
-          "version": "27.0",
-          "build": "24M6362",
-          "postingDate": "2026-09-14",
-          "title": "visionOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        },
-        {
-          "platform": "visionOS",
-          "version": "27.0",
-          "build": "24M362",
-          "postingDate": "2026-09-14",
-          "title": "visionOS 27.0",
-          "_updateType": "major",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-09-26T13:10:26.210Z"
-        }
-      ]
+      "updates": [],
+      "_fetchError": true
     }
   },
-  "_intervalStats": {
-    "ios": {
-      "avgDays": 0,
-      "daysSinceLast": 12,
-      "history": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    "macos": {
-      "avgDays": 46,
-      "daysSinceLast": 11,
-      "history": [
-        0,
-        0,
-        182,
-        0
-      ]
-    },
-    "watchos": {
-      "avgDays": 0,
-      "daysSinceLast": 3,
-      "history": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    "tvos": {
-      "avgDays": 0,
-      "daysSinceLast": 12,
-      "history": [
-        0,
-        0,
-        0
-      ]
-    },
-    "visionos": {
-      "avgDays": 0,
-      "daysSinceLast": 12,
-      "history": [
-        0
-      ]
-    }
-  }
+  "_intervalStats": {}
 }
