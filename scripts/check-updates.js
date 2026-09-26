@@ -61,7 +61,9 @@ function curlGet(urlStr, options = {}) {
       const headers = Object.entries(options.headers || {})
         .map(([k, v]) => `-H '${k}: ${v}'`)
         .join(' ');
-      const cmd = `curl -sSk --connect-timeout 15 --max-time 30 ${headers} '${urlStr}'`;
+      const method = options.method || 'GET';
+      const body = options.body ? `-d '${String(options.body).replace(/'/g, "'\\''")}'` : '';
+      const cmd = `curl -sSk --connect-timeout 15 --max-time 30 -X ${method} ${headers} ${body} '${urlStr}'`;
       const stdout = execSync(cmd, {
         encoding: 'utf-8',
         timeout: FETCH_TIMEOUT_MS + 5000,
