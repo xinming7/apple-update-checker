@@ -270,8 +270,8 @@ async function main() {
   const entries = await fetchSecurityUpdates();
 
   if (entries.length === 0) {
-    console.log('No security entries found.');
-    return;
+    console.error('No security entries found — possible HTML parse failure or Apple page changed.');
+    process.exit(1);
   }
 
   // 获取最近 3 个条目的详细信息（并行请求）

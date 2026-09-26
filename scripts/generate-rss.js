@@ -78,6 +78,15 @@ function generateAtomFeed(data) {
   </entry>\n`;
   }
 
+  // <updated> 取所有 entry 中最新的发布日期，避免无更新时每日抖动
+  let latestDate = now;
+  for (const platform of Object.values(data.platforms || {})) {
+    for (const u of (platform.updates || [])) {
+      const d = u.postingDate || u.firstSeen;
+      if (d && d > latestDate) latestDate = d;
+    }
+  }
+
   return `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>${escapeXml(FEED_TITLE)}</title>
@@ -85,7 +94,7 @@ function generateAtomFeed(data) {
   <link href="${REPO_URL}/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="${REPO_URL}" rel="alternate" type="text/html"/>
   <id>${REPO_URL}</id>
-  <updated>${now}</updated>
+  <updated>${new Date(latestDate).toISOString()}</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
