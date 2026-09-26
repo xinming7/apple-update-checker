@@ -61,8 +61,17 @@ function curlGet(urlStr, options = {}) {
       const headers = Object.entries(options.headers || {})
         .map(([k, v]) => `-H '${k}: ${v}'`)
         .join(' ');
-      const cmd = `curl -s --connect-timeout 15 --max-time 30 ${headers} '${urlStr}'`;
-      const stdout = execSync(cmd, { encoding: 'utf-8', timeout: FETCH_TIMEOUT_MS + 5000 });
+      const cmd = `curl -sSk --connect-timeout 15 --max-time 30 ${headers} '${urlStr}'`;
+      const stdout = execSync(cmd, {
+        encoding: 'utf-8',
+        timeout: FETCH_TIMEOUT_MS + 5000,
+        maxBuffer: 5 * 1024 * 1024,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      if (!stdout || !stdout.trim()) {
+        reject(new Error('curl returned empty response'));
+        return;
+      }
       resolve({
         ok: true,
         status: 200,
@@ -70,7 +79,8 @@ function curlGet(urlStr, options = {}) {
         text: () => Promise.resolve(stdout),
       });
     } catch (err) {
-      reject(new Error(`curl failed: ${err.message}`));
+      const stderr = err.stderr ? String(err.stderr).trim() : '';
+      reject(new Error(`curl failed (exit ${err.status || '?'}): ${stderr || err.message}`));
     }
   });
 }
