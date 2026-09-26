@@ -759,29 +759,42 @@ async function sendTelegramMessage(text) {
 }
 
 /**
- * 格式化新版本消息（增强版）
+ * 格式化新版本消息（按平台分组，每组前放平台 tag）
  */
 function formatTelegramMessage(newUpdates, intervalStats) {
   let msg = `🍎 <b>Apple 系统更新通知</b>\n\n`;
   msg += `检测到 <b>${newUpdates.length}</b> 个新版本：\n\n`;
 
+  // 按平台分组，保持出现顺序
+  const groups = [];
+  const groupMap = new Map();
   for (const u of newUpdates) {
-    const typeLabel = updateTypeLabel(u._updateType);
-    msg += `${typeLabel}\n`;
-    msg += `📱 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
-    if (u.build) msg += ` (${escapeHtml(u.build)})`;
-    if (u.downloadSize) msg += ` [${formatSize(u.downloadSize)}]`;
-    msg += `\n`;
-    if (u.postingDate) {
-      msg += `📅 发布日期: ${fmtDate(u.postingDate)}\n`;
+    if (!groupMap.has(u.platform)) {
+      groupMap.set(u.platform, []);
+      groups.push(u.platform);
     }
+    groupMap.get(u.platform).push(u);
+  }
 
-    // 固件下载链接
-    if (u._firmwareUrls && u._firmwareUrls.apple) {
-      msg += `⬇️ <a href="${escapeHtml(u._firmwareUrls.apple)}">Apple 官方固件下载</a>\n`;
+  for (const platform of groups) {
+    const updates = groupMap.get(platform);
+    msg += `#${platform}更新\n\n`;
+
+    for (const u of updates) {
+      const typeLabel = updateTypeLabel(u._updateType);
+      msg += `${typeLabel}\n`;
+      msg += `📱 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
+      if (u.build) msg += ` (${escapeHtml(u.build)})`;
+      if (u.downloadSize) msg += ` [${formatSize(u.downloadSize)}]`;
+      msg += `\n`;
+      if (u.postingDate) {
+        msg += `📅 发布日期: ${fmtDate(u.postingDate)}\n`;
+      }
+      if (u._firmwareUrls && u._firmwareUrls.apple) {
+        msg += `⬇️ <a href="${escapeHtml(u._firmwareUrls.apple)}">Apple 官方固件下载</a>\n`;
+      }
+      msg += `\n`;
     }
-
-    msg += `\n`;
   }
 
   // 更新间隔统计
@@ -801,29 +814,9 @@ function formatTelegramMessage(newUpdates, intervalStats) {
   }
 
   const repoUrl = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
-  msg += `🔗 <a href="${repoUrl}/blob/main/UPDATE_STATUS.md">查看详细信息</a>\n\n`;
+  msg += `🔗 <a href="${repoUrl}/blob/main/UPDATE_STATUS.md">查看详细信息</a>`;
 
-  // 标签：平台 tag 按出现顺序排在前面，通用 tag 在后面
-  const platformTags = [];
-  const extraTags = [];
-  const seen = new Set();
-  for (const u of newUpdates) {
-    if (u.platform && !seen.has(u.platform)) {
-      seen.add(u.platform);
-      platformTags.push(`#${u.platform}更新`);
-    }
-    if (u._updateType === 'security-response' && !seen.has('security-response')) {
-      seen.add('security-response');
-      extraTags.push('#安全响应');
-    }
-    if (u._updateType === 'xprotect' && !seen.has('xprotect')) {
-      seen.add('xprotect');
-      extraTags.push('#XProtect');
-    }
-  }
-  msg += [...platformTags, ...extraTags, '#苹果系统更新'].join(' ');
-
-  // 截断放在最后，确保链接和标签都已追加
+  // 截断放在最后
   return truncateHtmlMessage(msg);
 }
 
