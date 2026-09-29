@@ -5,48 +5,38 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-09-28T08:24:11.289Z</updated>
+  <updated>2026-09-29T08:03:03.794Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
   <entry>
-    <title>iOS 27.0 (24A9437)</title>
+    <title>iOS 27.0.1 (24A9446)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:iOS-27.0-24A9437</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>iOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>iOS</strong> 27.0 (24A9437)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <id>tag:apple-update-checker,2026-09-28:iOS-27.0.1-24A9446</id>
+    <published>2026-09-28T00:00:00.000Z</published>
+    <updated>2026-09-28T00:00:00.000Z</updated>
+    <summary>iOS 27.0.1 更新</summary>
+    <content type="html"><![CDATA[<p><strong>iOS</strong> 27.0.1 (24A9446)</p><ul><li>发布日期: 2026/9/28</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="iOS" label="iOS"/>
   </entry>
   <entry>
-    <title>macOS 27.0 (26A5428)</title>
+    <title>macOS 27.0.1 (26A5434)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-15:macOS-27.0-26A5428</id>
-    <published>2026-09-15T00:00:00.000Z</published>
-    <updated>2026-09-15T00:00:00.000Z</updated>
-    <summary>macOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 27.0 (26A5428)</p><ul><li>发布日期: 2026/9/15</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <id>tag:apple-update-checker,2026-09-28:macOS-27.0.1-26A5434</id>
+    <published>2026-09-28T00:00:00.000Z</published>
+    <updated>2026-09-28T00:00:00.000Z</updated>
+    <summary>macOS 27.0.1 更新</summary>
+    <content type="html"><![CDATA[<p><strong>macOS</strong> 27.0.1 (26A5434)</p><ul><li>发布日期: 2026/9/28</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="macOS" label="macOS"/>
   </entry>
   <entry>
-    <title>watchOS 27.0.1 (24R365)</title>
+    <title>watchOS 27.0.1 (24R6365)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-23:watchOS-27.0.1-24R365</id>
-    <published>2026-09-23T00:00:00.000Z</published>
-    <updated>2026-09-23T00:00:00.000Z</updated>
+    <id>tag:apple-update-checker,2026-09-28:watchOS-27.0.1-24R6365</id>
+    <published>2026-09-28T00:00:00.000Z</published>
+    <updated>2026-09-28T00:00:00.000Z</updated>
     <summary>watchOS 27.0.1 更新</summary>
-    <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.0.1 (24R365)</p><ul><li>发布日期: 2026/9/23</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
-    <category term="watchOS" label="watchOS"/>
-  </entry>
-  <entry>
-    <title>watchOS 27.0 (24R6364)</title>
-    <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-23:watchOS-27.0-24R6364</id>
-    <published>2026-09-23T00:00:00.000Z</published>
-    <updated>2026-09-23T00:00:00.000Z</updated>
-    <summary>watchOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.0 (24R6364)</p><ul><li>发布日期: 2026/9/23</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.0.1 (24R6365)</p><ul><li>发布日期: 2026/9/28</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="watchOS" label="watchOS"/>
   </entry>
   <entry>
@@ -60,20 +50,20 @@
     <category term="tvOS" label="tvOS"/>
   </entry>
   <entry>
-    <title>visionOS 27.0 (24M6362)</title>
+    <title>visionOS 27.0.1 (24M6372)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-14:visionOS-27.0-24M6362</id>
-    <published>2026-09-14T00:00:00.000Z</published>
-    <updated>2026-09-14T00:00:00.000Z</updated>
-    <summary>visionOS 27.0 更新</summary>
-    <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.0 (24M6362)</p><ul><li>发布日期: 2026/9/14</li><li>类型: 大版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <id>tag:apple-update-checker,2026-09-28:visionOS-27.0.1-24M6372</id>
+    <published>2026-09-28T00:00:00.000Z</published>
+    <updated>2026-09-28T00:00:00.000Z</updated>
+    <summary>visionOS 27.0.1 更新</summary>
+    <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.0.1 (24M6372)</p><ul><li>发布日期: 2026/9/28</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="visionOS" label="visionOS"/>
   </entry>
   <entry>
     <title>iOS 27.2 Beta 2</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-28:iOS-beta-27.2</id>
-    <published>2026-09-28T08:24:11.289Z</published>
+    <id>tag:apple-update-checker,2026-09-29:iOS-beta-27.2</id>
+    <published>2026-09-29T08:03:03.794Z</published>
     <updated>2024-01-01T00:00:00Z</updated>
     <summary>iOS 27.2 Beta 2</summary>
     <content type="html"><![CDATA[<p><strong>iOS</strong> 27.2 Beta 2</p><p>类型: Beta 版本</p>]]></content>
@@ -82,8 +72,8 @@
   <entry>
     <title>macOS 27.2 Beta 2</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-28:macOS-beta-27.2</id>
-    <published>2026-09-28T08:24:11.289Z</published>
+    <id>tag:apple-update-checker,2026-09-29:macOS-beta-27.2</id>
+    <published>2026-09-29T08:03:03.794Z</published>
     <updated>2024-01-01T00:00:00Z</updated>
     <summary>macOS 27.2 Beta 2</summary>
     <content type="html"><![CDATA[<p><strong>macOS</strong> 27.2 Beta 2</p><p>类型: Beta 版本</p>]]></content>
@@ -92,8 +82,8 @@
   <entry>
     <title>watchOS 27.2 Beta 2</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-28:watchOS-beta-27.2</id>
-    <published>2026-09-28T08:24:11.289Z</published>
+    <id>tag:apple-update-checker,2026-09-29:watchOS-beta-27.2</id>
+    <published>2026-09-29T08:03:03.794Z</published>
     <updated>2024-01-01T00:00:00Z</updated>
     <summary>watchOS 27.2 Beta 2</summary>
     <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.2 Beta 2</p><p>类型: Beta 版本</p>]]></content>
@@ -102,8 +92,8 @@
   <entry>
     <title>tvOS 27.2 Beta 2</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-28:tvOS-beta-27.2</id>
-    <published>2026-09-28T08:24:11.289Z</published>
+    <id>tag:apple-update-checker,2026-09-29:tvOS-beta-27.2</id>
+    <published>2026-09-29T08:03:03.794Z</published>
     <updated>2024-01-01T00:00:00Z</updated>
     <summary>tvOS 27.2 Beta 2</summary>
     <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.2 Beta 2</p><p>类型: Beta 版本</p>]]></content>
@@ -112,8 +102,8 @@
   <entry>
     <title>visionOS 27.2 Beta 2</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-09-28:visionOS-beta-27.2</id>
-    <published>2026-09-28T08:24:11.289Z</published>
+    <id>tag:apple-update-checker,2026-09-29:visionOS-beta-27.2</id>
+    <published>2026-09-29T08:03:03.794Z</published>
     <updated>2024-01-01T00:00:00Z</updated>
     <summary>visionOS 27.2 Beta 2</summary>
     <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.2 Beta 2</p><p>类型: Beta 版本</p>]]></content>
