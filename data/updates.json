@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-05T08:36:24.944Z",
+  "lastChecked": "2026-10-06T08:42:57.133Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -53,7 +53,7 @@
           "platform": "tvOS",
           "version": "27.0",
           "build": "24J6361",
-          "postingDate": "2026-09-14",
+          "postingDate": "2026-10-05",
           "title": "tvOS 27.0",
           "_updateType": "major",
           "_firmwareUrls": {},
@@ -68,7 +68,7 @@
           "platform": "visionOS",
           "version": "27.0.1",
           "build": "24M6372",
-          "postingDate": "2026-09-28",
+          "postingDate": "2026-10-05",
           "title": "visionOS 27.0.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
@@ -81,44 +81,44 @@
     {
       "platform": "iOS",
       "version": "27.2",
-      "betaNumber": 2
+      "betaNumber": 3
     },
     {
       "platform": "macOS",
       "version": "27.2",
-      "betaNumber": 2
+      "betaNumber": 3
     },
     {
       "platform": "watchOS",
       "version": "27.2",
-      "betaNumber": 2
+      "betaNumber": 3
     },
     {
       "platform": "tvOS",
       "version": "27.2",
-      "betaNumber": 2
+      "betaNumber": 3
     },
     {
       "platform": "visionOS",
       "version": "27.2",
-      "betaNumber": 2
+      "betaNumber": 3
     }
   ],
   "_intervalStats": {
     "ios": {
-      "daysSinceLast": 3
+      "daysSinceLast": 4
     },
     "macos": {
-      "daysSinceLast": 7
+      "daysSinceLast": 8
     },
     "watchos": {
-      "daysSinceLast": 7
+      "daysSinceLast": 8
     },
     "tvos": {
-      "daysSinceLast": 21
+      "daysSinceLast": 1
     },
     "visionos": {
-      "daysSinceLast": 7
+      "daysSinceLast": 1
     }
   }
 }
