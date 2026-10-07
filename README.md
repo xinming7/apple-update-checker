@@ -5,11 +5,12 @@
 ## 功能特性
 
 ### 🔔 通知与订阅
-- 每天北京时间 10:00 自动检查更新
+- 每天北京时间 10:00 自动检查更新（Node.js 22）
 - 检测到新版本自动创建 GitHub Issue 通知
-- 支持 Telegram Bot 推送通知（HTML 安全截断，不会破坏标签）
+- 支持 Telegram Bot 推送通知（HTML 安全截断，3 次重试）
 - **RSS Feed** 输出（Atom 格式），可用任意 RSS 阅读器订阅
 - 每日北京时间 20:00 汇总推送（需接入 Update Hub）
+- Beta 版本变更检测（仅在 Beta 版本升级时通知，避免重复）
 
 ### 📱 平台支持
 - iOS、macOS、watchOS、tvOS、visionOS 五大平台
@@ -24,7 +25,8 @@
 ### 📊 分析功能
 - **更新间隔统计**，显示各平台平均更新频率
 - **固件下载链接**（Apple 官方 OTA，仅 iOS/watchOS/tvOS 有）
-- 请求超时 30s + 失败自动重试（3 次）
+- 请求超时 30s + 失败自动重试（3 次，指数退避）
+- **curl fallback**：Apple CDN 证书链不被 Node.js fetch 信任，自动降级到 curl（系统证书库）
 
 ## 数据源架构
 
@@ -37,12 +39,13 @@
 - gdmf/pmv 通过 `PublicAssetSets` 和 `PublicBackgroundSecurityImprovements` 分别提供正式版本和 RSR
 - mesu feed 的 `OSVersion` 带 `9.9.` 打码前缀（如 `9.9.27.0` 实为 `27.0`），脚本自动归一化
 - macOS / visionOS 无公开 mesu XML feed，固件链接正确留空
+- 所有 Apple CDN 请求使用 `curlFallback`：Node.js fetch/undici 无法信任 Apple CDN 证书链，自动降级到 curl（使用系统证书库）
 
 ### 更新类型分类
 
 | 标记 | 类型 | 判断规则 |
 |------|------|----------|
-| 🔴 | 安全响应 (RSR) | 标题含 `Rapid Security Response`、`ProductVersionExtra` 或版本形如 `(a)` |
+| 🔴 | 安全响应 (RSR) | 标题含 `Rapid Security Response`、`ProductVersionExtra` 或版本形如 `(a)` / `(b)` |
 | 🟢 | 大版本更新 | 纯主版本 `x` 或 `x.0` |
 | 🔵 | 小版本更新 | `x.y` / `x.y.z` |
 | 🛡️ | XProtect 更新 | macOS 安全签名（当前暂不可用，见下方说明） |
@@ -51,6 +54,8 @@
 ### Beta 版本检测
 
 通过 Apple Developer Docs 的 release-notes JSON 端点检测各平台最新 Beta 版本。每个平台的页面标题包含版本信息（如 `iOS & iPadOS 27.2 Beta 2 Release Notes`），脚本自动提取并展示在 Telegram 通知的对应平台 Tag 下。
+
+变更检测：与上次检查的 `betaUpdates` 对比，仅在 Beta 版本升级（如 Beta 2 → Beta 3）时发送通知，避免每天重复通知同一批 Beta。
 
 覆盖平台：iOS、macOS、watchOS、tvOS、visionOS。
 
@@ -79,7 +84,7 @@ gdmf/pmv 不含 XProtect 数据，需接入 Pallas（`gdmf/v2/assets` + `XProtec
 
 | Secret | 用途 |
 |--------|------|
-| `UPDATE_HUB_URL` | Update Hub 仪表盘地址 |
+| `UPDATE_HUB_URL` | Update Hub 仪表盘地址（上报时分批 3 个/批，避免限流） |
 | `UPDATE_HUB_TOKEN` | Update Hub 访问 Token |
 
 ### 可选 Variables
@@ -144,7 +149,7 @@ apple-update-checker/
 
 | 文件 | 说明 |
 |------|------|
-| `data/updates.json` | 系统更新数据（含更新类型、固件链接、间隔统计、firstSeen） |
+| `data/updates.json` | 系统更新数据（含更新类型、固件链接、间隔统计、firstSeen、betaUpdates） |
 | `data/security.json` | 安全公告数据（CVE 列表、release notes 摘要） |
 | `data/xprotect.json` | XProtect 版本记录（当前不可用时保留旧记录） |
 
