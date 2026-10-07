@@ -61,21 +61,26 @@ function curlGet(urlStr, options = {}) {
   if (options.body) args.push('-d', String(options.body));
   args.push(urlStr);
 
-  const stdout = execFileSync('curl', args, {
-    encoding: 'utf-8',
-    timeout: FETCH_TIMEOUT_MS + 5000,
-    maxBuffer: 5 * 1024 * 1024,
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-  if (!stdout || !stdout.trim()) {
-    throw new Error('curl returned empty response');
+  try {
+    const stdout = execFileSync('curl', args, {
+      encoding: 'utf-8',
+      timeout: FETCH_TIMEOUT_MS + 5000,
+      maxBuffer: 5 * 1024 * 1024,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    if (!stdout || !stdout.trim()) {
+      throw new Error('curl returned empty response');
+    }
+    return {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(JSON.parse(stdout)),
+      text: () => Promise.resolve(stdout),
+    };
+  } catch (err) {
+    const stderr = err.stderr ? String(err.stderr).trim() : '';
+    throw new Error(`curl failed (exit ${err.status || '?'}): ${stderr || err.message}`);
   }
-  return {
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve(JSON.parse(stdout)),
-    text: () => Promise.resolve(stdout),
-  };
 }
 
 function escapeHtml(s) {

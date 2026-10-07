@@ -536,7 +536,7 @@ async function fetchXProtectVersion(rawData) {
     console.log('  XProtect 数据暂不可用（gdmf/pmv 不含 XProtect，需接入 Pallas），跳过');
     return null;
   } catch (err) {
-    console.error(`  XProtect fetch failed: ${err.message}`);
+    console.warn(`  XProtect fetch failed: ${err.message}`);
     return null;
   }
 }
@@ -823,7 +823,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
     }
   }
 
-  // 更新间隔统计
+  // 更新间隔统计（放在 Beta 之后、链接之前，截断时保留核心版本信息）
   if (intervalStats) {
     const statEntries = Object.entries(intervalStats).filter(([, s]) => s.daysSinceLast != null);
     if (statEntries.length > 0) {

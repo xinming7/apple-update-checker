@@ -85,7 +85,7 @@ function parseSecurityPage(html) {
   // 备用方案：提取 <a> 标签中的安全更新链接
   if (entries.length === 0) {
     console.log('  Table parsing failed, trying link extraction...');
-    const linkRegex = /<a[^>]+href="(https:\/\/support\.apple\.com\/[^"]*HT\d+[^"]*)"[^>]*>([^<]*(?:iOS|macOS|watchOS|tvOS|visionOS|Safari)[^<]*)<\/a>/gi;
+    const linkRegex = /<a[^>]+href="(https:\/\/support\.apple\.com\/en-us\/HT\d+[^"]*)"[^>]*>((?:iOS|iPadOS|macOS|watchOS|tvOS|visionOS|Safari)\s+[\d.]+[^<]*)<\/a>/gi;
     let linkMatch;
 
     while ((linkMatch = linkRegex.exec(html)) !== null) {
