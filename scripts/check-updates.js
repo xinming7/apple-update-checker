@@ -65,13 +65,13 @@ function extractDateFromUrl(url) {
   return Number.isNaN(new Date(iso).getTime()) ? undefined : iso;
 }
 
-function semverKey(v) {
+function versionToParts(v) {
   return String(v).split('.').map(n => parseInt(n, 10) || 0);
 }
 
 /** 版本号降序比较（同版本按 build 降序） */
 function compareUpdatesDesc(a, b) {
-  const va = semverKey(a.version), vb = semverKey(b.version);
+  const va = versionToParts(a.version), vb = versionToParts(b.version);
   for (let i = 0; i < Math.max(va.length, vb.length); i++) {
     const d = (vb[i] || 0) - (va[i] || 0);
     if (d !== 0) return d;
@@ -206,8 +206,8 @@ function parsePmvData(data) {
     let filtered;
     if (nonRsr.length > 0) {
       // 取最新版本的主版本号（如27.0 → 27）
-      const latestMajor = semverKey(nonRsr[0].version)[0];
-      const latestLine = nonRsr.filter(u => semverKey(u.version)[0] === latestMajor);
+      const latestMajor = versionToParts(nonRsr[0].version)[0];
+      const latestLine = nonRsr.filter(u => versionToParts(u.version)[0] === latestMajor);
       // 过滤掉比最新正式版更旧的 RSR（compareUpdatesDesc(a,b)<0 表示 a 比 b 更新）
       const latestStableVer = nonRsr[0].version;
       const newerRsr = rsr.filter(u => compareUpdatesDesc(u, { version: latestStableVer }) < 0);
@@ -736,10 +736,10 @@ async function sendTelegramMessage(text) {
     if (result.ok) {
       console.log('Telegram notification sent successfully.');
     } else {
-      console.error('Telegram API error:', result.description);
+      console.warn('Telegram API error:', result.description);
     }
   } catch (err) {
-    console.error('Failed to send Telegram notification:', err.message);
+    console.warn('Failed to send Telegram notification:', err.message);
   }
 }
 
@@ -872,32 +872,37 @@ async function reportToUpdateHub(updates) {
     body: JSON.stringify({ name: PROJECT, label: 'Apple 系统更新', type: 'version', icon: '🍎' }),
   });
 
-  // 并行上报所有更新，避免串行等待
-  const results = await Promise.allSettled(updates.map(async (u) => {
-    const payload = {
-      version: u.version,
-      title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
-      body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
-      status: 'changed',
-      extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
-    };
-    const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
-      method: 'POST',
-      headers,
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      body: JSON.stringify(payload),
-    });
-    let res = await post();
-    if (res.status === 404) {
-      // 项目未注册：自动注册后重试一次，避免上报静默丢失
-      await registerProject();
-      res = await post();
-    }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json().catch(() => ({}));
-    console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
-    return result;
-  }));
+  // 分批上报（每批 3 个），避免并发过高触发 Hub 限流
+  const BATCH_SIZE = 3;
+  const results = [];
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const batch = updates.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.allSettled(batch.map(async (u) => {
+      const payload = {
+        version: u.version,
+        title: `${u.platform} ${u.version}${u.build ? ` (${u.build})` : ''}`,
+        body: u.postingDate ? `发布日期: ${fmtDate(u.postingDate)}` : '',
+        status: 'changed',
+        extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
+      };
+      const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
+        method: 'POST',
+        headers,
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        body: JSON.stringify(payload),
+      });
+      let res = await post();
+      if (res.status === 404) {
+        await registerProject();
+        res = await post();
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const result = await res.json().catch(() => ({}));
+      console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
+      return result;
+    }));
+    results.push(...batchResults);
+  }
 
   // 统计失败数
   const failed = results.filter(r => r.status === 'rejected');
