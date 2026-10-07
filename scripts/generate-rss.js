@@ -4,17 +4,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { updateTypeLabel, formatSize } = require('./utils');
+const { updateTypeLabel, formatSize, escapeXml } = require('./utils');
 
 const REPO_URL = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
 const FEED_TITLE = 'Apple System Updates';
 const FEED_SUBTITLE = 'iOS, macOS, watchOS, tvOS, visionOS, XProtect 系统更新追踪';
-
-function escapeXml(str) {
-  if (!str) return '';
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
 
 function formatDate(isoStr) {
   if (!isoStr) return new Date().toISOString();

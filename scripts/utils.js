@@ -88,6 +88,17 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+/** XML 安全转义（RSS feed 等 XML 输出用） */
+function escapeXml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 function mdCell(v) {
   return String(v == null ? '-' : v).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ').trim() || '-';
 }
@@ -146,6 +157,7 @@ module.exports = {
   sleep,
   fetchWithRetry,
   escapeHtml,
+  escapeXml,
   mdCell,
   formatSize,
   updateTypeLabel,

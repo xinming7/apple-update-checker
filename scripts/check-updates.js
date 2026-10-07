@@ -90,8 +90,8 @@ function compareUpdatesDesc(a, b) {
  */
 function classifyUpdate(version, build, title, versionExtra) {
   if (title && /Rapid Security Response/i.test(title)) return 'security-response';
-  if (versionExtra && /\(\s*[a-z]\s*\)/i.test(String(versionExtra))) return 'security-response';
-  if (version && /\(\s*[a-z]\s*\)\s*$/i.test(String(version).trim())) return 'security-response';
+  if (versionExtra && /\(\s*[ab]\s*\)/i.test(String(versionExtra))) return 'security-response';
+  if (version && /\(\s*[ab]\s*\)\s*$/i.test(String(version).trim())) return 'security-response';
   if (version) {
     const parts = String(version).split('.');
     if (parts.length === 1) return 'major';
@@ -653,7 +653,7 @@ function computeIntervalStats(data) {
 
 /**
  * 读取上次检查数据，检测是否有新版本（含 Beta 变更）
- * 返回 newUpdates 数组；如有 Beta 变更，附带 _betaChanges 字段
+ * 返回 { updates: [...], betaChanges: [...] } 或 null
  */
 function detectChanges(current, dataDir) {
   const prevFile = path.join(dataDir, 'updates.json');
@@ -689,7 +689,6 @@ function detectChanges(current, dataDir) {
     const currBeta = current.betaUpdates || [];
     const betaChanges = [];
     for (const b of currBeta) {
-      const key = `${b.platform}-${b.version}-Beta${b.betaNumber || 0}`;
       const found = prevBeta.find(p =>
         p.platform === b.platform && p.version === b.version && (p.betaNumber || 0) === (b.betaNumber || 0)
       );
@@ -697,11 +696,8 @@ function detectChanges(current, dataDir) {
         betaChanges.push(b);
       }
     }
-    if (betaChanges.length > 0) {
-      newUpdates._betaChanges = betaChanges;
-    }
 
-    return newUpdates;
+    return { updates: newUpdates, betaChanges };
   } catch (err) {
     console.error('Error reading previous data:', err.message);
     return null;
@@ -907,7 +903,7 @@ async function reportToUpdateHub(updates) {
   // 统计失败数
   const failed = results.filter(r => r.status === 'rejected');
   if (failed.length > 0) {
-    console.error(`Update Hub: ${failed.length}/${updates.length} reports failed`);
+    console.warn(`Update Hub: ${failed.length}/${updates.length} reports failed`);
   }
 }
 
@@ -1020,8 +1016,10 @@ async function main() {
   }
 
   // 检测变更
-  const newUpdates = detectChanges(output, dataDir);
-  if (xpResult && newUpdates) {
+  const changeResult = detectChanges(output, dataDir);
+  const newUpdates = changeResult?.updates || [];
+  const betaChanges = changeResult?.betaChanges || [];
+  if (xpResult && newUpdates.length > 0) {
     newUpdates.push(xpResult);
   }
 
@@ -1053,8 +1051,7 @@ async function main() {
   }
 
   // 输出新版本信息供 workflow 读取，并发送 Telegram 通知
-  const betaChanges = newUpdates?._betaChanges || [];
-  if (newUpdates && newUpdates.length > 0) {
+  if (newUpdates.length > 0) {
     console.log('');
     console.log('=== NEW UPDATES DETECTED ===');
     for (const u of newUpdates) {
