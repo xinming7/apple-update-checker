@@ -29,7 +29,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
         try {
           response = curlGet(url, fetchOptions);
         } catch (curlErr) {
-          console.error(`  curl failed: ${curlErr.message}, trying fetch...`);
+          console.warn(`  curl failed: ${curlErr.message}, trying fetch...`);
           response = await doFetch(url, fetchOptions);
         }
       } else {
@@ -38,7 +38,7 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response;
     } catch (err) {
-      console.error(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
+      console.warn(`  Attempt ${i + 1}/${retries} failed: ${err.message}`);
       if (i < retries - 1) await sleep(RETRY_DELAY_MS * (i + 1));
       else throw err;
     }
@@ -114,7 +114,8 @@ function formatSize(bytes) {
   return `${(bytes / 1024).toFixed(0)} KB`;
 }
 
-function updateTypeLabel(type) {
+/** 纯文本标签（RSS feed 等非 emoji 场景） */
+function updateTypeLabelPlain(type) {
   const labels = {
     'major': '大版本更新',
     'minor': '小版本更新',
@@ -165,7 +166,7 @@ module.exports = {
   escapeXml,
   mdCell,
   formatSize,
-  updateTypeLabel,
+  updateTypeLabelPlain,
   updateTypeLabelTg,
   fmtDate,
   truncateHtmlMessage,

@@ -4,7 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { updateTypeLabel, formatSize, escapeXml } = require('./utils');
+const { updateTypeLabelPlain, formatSize, escapeXml, escapeHtml } = require('./utils');
 
 const REPO_URL = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
 const FEED_TITLE = 'Apple System Updates';
@@ -28,16 +28,16 @@ function generateAtomFeed(data) {
       const published = formatDate(u.postingDate || u.firstSeen || data.lastChecked);
       const id = `tag:apple-update-checker,${published.split('T')[0]}:${u.platform}-${u.version}-${u.build}`;
 
-      // CDATA 内是原始文本，不需要 XML 转义（转义会导致 &amp; 等双重转义）
-      let content = `<p><strong>${u.platform}</strong> ${u.version}${u.build ? ` (${u.build})` : ''}</p>`;
+      // CDATA 内是 HTML，需 escapeHtml 防注入（escapeXml 仅用于 XML 属性/元素值）
+      let content = `<p><strong>${escapeHtml(u.platform)}</strong> ${escapeHtml(u.version)}${u.build ? ` (${escapeHtml(u.build)})` : ''}</p>`;
       content += `<ul>`;
       if (u.postingDate || u.firstSeen) content += `<li>发布日期: ${new Date(u.postingDate || u.firstSeen).toLocaleDateString('zh-CN')}</li>`;
       if (u.downloadSize) content += `<li>大小: ${formatSize(u.downloadSize)}</li>`;
-      if (u._updateType) content += `<li>类型: ${updateTypeLabel(u._updateType)}</li>`;
+      if (u._updateType) content += `<li>类型: ${updateTypeLabelPlain(u._updateType)}</li>`;
       content += `</ul>`;
 
       if (u._firmwareUrls && u._firmwareUrls.apple) {
-        content += `<p><a href="${u._firmwareUrls.apple}">Apple 固件下载</a></p>`;
+        content += `<p><a href="${escapeHtml(u._firmwareUrls.apple)}">Apple 固件下载</a></p>`;
       }
 
       content += `<p><a href="${REPO_URL}/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>`;
@@ -60,7 +60,7 @@ function generateAtomFeed(data) {
     const xp = data.xprotect;
     const published = formatDate(xp.lastChecked || data.lastChecked);
     const id = `tag:apple-update-checker,${published.split('T')[0]}:XProtect-${xp.version}`;
-    const content = `<p><strong>XProtect</strong> 版本 ${xp.version}</p><p>签名日期: ${xp.date}</p>`;
+    const content = `<p><strong>XProtect</strong> 版本 ${escapeHtml(xp.version)}</p><p>签名日期: ${escapeHtml(xp.date)}</p>`;
 
     entries += `  <entry>
     <title>XProtect ${escapeXml(xp.version)}</title>
@@ -82,7 +82,7 @@ function generateAtomFeed(data) {
       // Beta 条目用 lastChecked 作为 <updated>，避免硬编码固定时间戳
       const published = formatDate(data.lastChecked);
       const id = `tag:apple-update-checker,${published.split('T')[0]}:${b.platform}-beta-${b.version}`;
-      const content = `<p><strong>${b.platform}</strong> ${betaVer}</p><p>类型: Beta 版本</p>`;
+      const content = `<p><strong>${escapeHtml(b.platform)}</strong> ${escapeHtml(betaVer)}</p><p>类型: Beta 版本</p>`;
 
       entries += `  <entry>
     <title>${escapeXml(title)}</title>
@@ -130,7 +130,13 @@ async function main() {
     process.exit(1);
   }
 
-  const data = JSON.parse(fs.readFileSync(dataFile, 'utf-8'));
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(dataFile, 'utf-8'));
+  } catch (err) {
+    console.error(`Failed to parse updates.json: ${err.message}`);
+    process.exit(1);
+  }
   const feed = generateAtomFeed(data);
 
   const feedFile = path.join(__dirname, '..', 'feed.xml');

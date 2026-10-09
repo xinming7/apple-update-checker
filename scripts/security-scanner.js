@@ -136,7 +136,7 @@ async function fetchSecurityDetail(url) {
     const html = await response.text();
     return parseDetailPage(html);
   } catch (err) {
-    console.error(`  Detail fetch failed: ${err.message}`);
+    console.warn(`  Detail fetch failed: ${err.message}`);
     return null;
   }
 }

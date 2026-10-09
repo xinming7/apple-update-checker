@@ -58,7 +58,7 @@ function normalizeVersion(v) {
 
 /** 从固件 URL 中提取打包日期（如 .../031-31206-20150812-.../） */
 function extractDateFromUrl(url) {
-  const m = url && String(url).match(/-(20[0-3]\d[01]\d[0-3]\d)-/);
+  const m = url && String(url).match(/-(20\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01]))-/);
   if (!m) return undefined;
   const s = m[1];
   const iso = `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;

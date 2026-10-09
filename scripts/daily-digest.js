@@ -42,7 +42,7 @@ function formatMessage(digest) {
       msg += `  ${icon} ${escapeHtml(u.title)}`;
       if (u.version) msg += ` <code>v${escapeHtml(u.version)}</code>`;
       msg += '\n';
-      if (u.diff_url) {
+      if (u.diff_url && /^https?:\/\//.test(u.diff_url)) {
         msg += `    <a href="${escapeHtml(u.diff_url)}">查看详情</a>\n`;
       }
     }

@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-08T08:33:38.177Z",
+  "lastChecked": "2026-10-09T07:13:43.881Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -8,7 +8,7 @@
           "platform": "iOS",
           "version": "27.0.1",
           "build": "24A9446",
-          "postingDate": "2026-10-02",
+          "postingDate": "2026-10-08",
           "title": "iOS 27.0.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
@@ -106,19 +106,19 @@
   ],
   "_intervalStats": {
     "ios": {
-      "daysSinceLast": 6
+      "daysSinceLast": 1
     },
     "macos": {
-      "daysSinceLast": 10
+      "daysSinceLast": 11
     },
     "watchos": {
-      "daysSinceLast": 10
+      "daysSinceLast": 11
     },
     "tvos": {
-      "daysSinceLast": 3
+      "daysSinceLast": 4
     },
     "visionos": {
-      "daysSinceLast": 3
+      "daysSinceLast": 4
     }
   }
 }
