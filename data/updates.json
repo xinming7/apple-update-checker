@@ -1,14 +1,24 @@
 {
-  "lastChecked": "2026-10-12T08:48:25.290Z",
+  "lastChecked": "2026-10-13T09:05:40.804Z",
   "platforms": {
     "ios": {
       "name": "iOS",
       "updates": [
         {
           "platform": "iOS",
+          "version": "27.1",
+          "build": "24A94425",
+          "postingDate": "2026-10-12",
+          "title": "iOS 27.1",
+          "_updateType": "minor",
+          "_firmwareUrls": {},
+          "firstSeen": "2026-10-13T09:05:40.804Z"
+        },
+        {
+          "platform": "iOS",
           "version": "27.0.1",
           "build": "24A9446",
-          "postingDate": "2026-10-09",
+          "postingDate": "2026-10-12",
           "title": "iOS 27.0.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
@@ -106,19 +116,23 @@
   ],
   "_intervalStats": {
     "ios": {
-      "daysSinceLast": 3
+      "avgDays": 0,
+      "daysSinceLast": 1,
+      "history": [
+        0
+      ]
     },
     "macos": {
-      "daysSinceLast": 14
+      "daysSinceLast": 15
     },
     "watchos": {
-      "daysSinceLast": 14
+      "daysSinceLast": 15
     },
     "tvos": {
-      "daysSinceLast": 7
+      "daysSinceLast": 8
     },
     "visionos": {
-      "daysSinceLast": 7
+      "daysSinceLast": 8
     }
   }
 }
