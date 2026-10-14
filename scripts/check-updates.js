@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   escapeHtml, mdCell, formatSize, updateTypeLabelTg,
-  fmtDate, truncateHtmlMessage, FETCH_TIMEOUT_MS, fetchWithRetry
+  fmtDate, truncateHtmlMessage, fetchWithRetry
 } = require('./utils');
 
 // 平台定义
@@ -83,15 +83,17 @@ function compareUpdatesDesc(a, b) {
 
 /**
  * 更新类型分类
- * - security-response: RSR（标题含 Rapid Security Response、版本形如 "16.5 (a)"、
+ * - security-response: RSR（标题含 Rapid Security Response、
  *   或 gdmf 的 ProductVersionExtra 形如 "(a)"）
  * - major: 纯主版本（"20"）或 x.0（"20.0"）
  * - minor: 其余（x.y / x.y.z）
+ *
+ * 注：不再单独检查 version 尾部是否形如 "(a)"——gdmf 的 RSR 标记一律走
+ * ProductVersionExtra，version 里不会带；旧的那条判断不可达，已移除。
  */
 function classifyUpdate(version, build, title, versionExtra) {
   if (title && /Rapid Security Response/i.test(title)) return 'security-response';
   if (versionExtra && /\(\s*[ab]\s*\)/i.test(String(versionExtra))) return 'security-response';
-  if (version && /\(\s*[ab]\s*\)\s*$/i.test(String(version).trim())) return 'security-response';
   if (version) {
     const parts = String(version).split('.');
     if (parts.length === 1) return 'major';
@@ -609,44 +611,88 @@ async function checkXProtectUpdate(dataDir, rawData) {
 }
 
 /**
- * 计算更新间隔统计
+ * 计算更新间隔统计。
+ *
+ * 注意：platform.updates 只含"当前在售版本线"，通常只有 1~2 条（pmv 的
+ * PublicAssetSets 只暴露当前发布），所以直接用它算不出历史间隔。
+ * 这里优先用 _history（跨天累积的版本记录，见 updateHistory），
+ * 没有时才退回 updates。history 为空时不产出 avgDays，
+ * 而不是拿 0 或 NaN 去糊一个假数字。
  */
 function computeIntervalStats(data) {
   const stats = {};
   const dateOf = (u) => u.postingDate || u.firstSeen;
 
   for (const [key, platform] of Object.entries(data.platforms)) {
-    if (platform.updates.length < 2) {
-      const only = platform.updates[0];
-      if (only && dateOf(only)) {
-        const daysSince = Math.floor(
-          (Date.now() - new Date(dateOf(only)).getTime()) / 86400000
-        );
-        stats[key] = { daysSinceLast: daysSince };
-      }
-      continue;
-    }
+    // 优先用累积历史，其次才是本次抓到的版本线
+    const history = Array.isArray(platform._history) && platform._history.length > 0
+      ? platform._history
+      : platform.updates;
 
-    const sorted = [...platform.updates]
+    const sorted = [...(history || [])]
       .filter(u => dateOf(u))
       .sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a)));
 
-    if (sorted.length < 2) continue;
+    if (sorted.length === 0) continue;
+
+    const daysSinceLast = Math.floor(
+      (Date.now() - new Date(dateOf(sorted[0])).getTime()) / 86400000
+    );
+
+    if (sorted.length < 2) {
+      stats[key] = { daysSinceLast };
+      continue;
+    }
 
     const intervals = [];
     for (let i = 0; i < sorted.length - 1; i++) {
       const diff = new Date(dateOf(sorted[i])) - new Date(dateOf(sorted[i + 1]));
-      intervals.push(Math.round(diff / 86400000));
+      if (diff > 0) intervals.push(Math.round(diff / 86400000));
+    }
+
+    if (intervals.length === 0) {
+      stats[key] = { daysSinceLast };
+      continue;
     }
 
     stats[key] = {
       avgDays: Math.round(intervals.reduce((s, d) => s + d, 0) / intervals.length),
-      daysSinceLast: Math.floor((Date.now() - new Date(dateOf(sorted[0])).getTime()) / 86400000),
+      daysSinceLast,
       history: intervals
     };
   }
 
   return stats;
+}
+
+/**
+ * 维护跨天累积的版本历史（最新在前，按 version-build 去重）。
+ * pmv 只给当前版本线，不累积就永远算不出更新间隔。
+ * 上限 20 条，够算间隔又不会让 updates.json 无限膨胀。
+ */
+const HISTORY_LIMIT = 20;
+
+function updateHistory(platform, now) {
+  const prev = Array.isArray(platform._history) ? platform._history : [];
+  const seen = new Map();
+  for (const u of prev) {
+    const k = `${u.version}-${u.build}`;
+    if (!seen.has(k)) seen.set(k, u);
+  }
+  for (const u of platform.updates || []) {
+    const k = `${u.version}-${u.build}`;
+    if (!seen.has(k)) {
+      seen.set(k, {
+        version: u.version,
+        build: u.build,
+        postingDate: u.postingDate,
+        firstSeen: u.firstSeen || now,
+      });
+    }
+  }
+  return [...seen.values()]
+    .sort(compareUpdatesDesc)
+    .slice(0, HISTORY_LIMIT);
 }
 
 // ─── 变更检测与通知 ────────────────────────────────────────────
@@ -669,7 +715,17 @@ function detectChanges(current, dataDir) {
     for (const [key, platform] of Object.entries(current.platforms)) {
       const prevPlatform = prev.platforms?.[key];
       if (!prevPlatform) {
-        for (const u of platform.updates) newUpdates.push(u);
+        // 首次出现的新平台 key：只做种子，不当作"新版本"上报。
+        // 否则（如 Apple 新增 xros 平台，或 PLATFORMS 过滤后首次纳入某平台）
+        // 第一次抓到就会把该平台全部历史版本刷屏式推送。
+        console.log(`  ${key}: first run for this platform, seeding without notification.`);
+        continue;
+      }
+
+      // 上次抓取失败（_fetchError）时不比对：current 里该平台可能是空数组，
+      // 恢复后会把全部版本误判为新更新。
+      if (prevPlatform._fetchError) {
+        console.log(`  ${key}: previous fetch failed, skipping comparison for this platform.`);
         continue;
       }
 
@@ -829,8 +885,10 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
     if (statEntries.length > 0) {
       msg += `📊 <b>更新间隔统计</b>\n`;
       for (const [platform, s] of statEntries) {
-        const icon = ALL_PLATFORMS[platform]?.name ? '📱' : '🛡️';
-        const name = ALL_PLATFORMS[platform]?.name || platform;
+        // 平台 key 是字典键，可能不属于 ALL_PLATFORMS（如历史遗留键）
+        const known = ALL_PLATFORMS[platform];
+        const icon = known ? '📱' : '🛡️';
+        const name = known?.name || platform;
         msg += `${icon} ${escapeHtml(name)}: 距上次更新 ${s.daysSinceLast} 天`;
         if (s.avgDays) msg += `，平均每 ${s.avgDays} 天更新一次`;
         msg += `\n`;
@@ -848,9 +906,13 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
 
 /**
  * 同步到 Update Hub
+ *
+ * 与其它出网点一致走 fetchWithRetry（超时 + 3 次退避重试）。
+ * 注意 fetchWithRetry 在 !res.ok 时抛错，所以 404 → 自动注册项目 → 重试一次
+ * 这条语义要显式捕获 HTTP 404，不能靠返回值的 status 判断。
  */
 async function reportToUpdateHub(updates) {
-  const hubUrl = process.env.UPDATE_HUB_URL;
+  const hubUrl = (process.env.UPDATE_HUB_URL || '').replace(/\/+$/, '');
   const hubToken = process.env.UPDATE_HUB_TOKEN;
   if (!hubUrl || !hubToken) {
     console.log('Update Hub not configured, skipping.');
@@ -861,12 +923,19 @@ async function reportToUpdateHub(updates) {
     'Authorization': `Bearer ${hubToken}`,
     'Content-Type': 'application/json',
   };
-  const registerProject = () => fetch(`${hubUrl}/api/projects`, {
-    method: 'POST',
-    headers,
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    body: JSON.stringify({ name: PROJECT, label: 'Apple 系统更新', type: 'version', icon: '🍎' }),
-  });
+
+  const is404 = (err) => /HTTP 404\b/.test(err && err.message || '');
+
+  const registerProject = async () => {
+    const res = await fetchWithRetry(`${hubUrl}/api/projects`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name: PROJECT, label: 'Apple 系统更新', type: 'version', icon: '🍎' }),
+    });
+    const result = await res.json().catch(() => ({}));
+    console.log(`Update Hub: project ${PROJECT} registered (${result.name || 'ok'})`);
+    return result;
+  };
 
   // 分批上报（每批 3 个），避免并发过高触发 Hub 限流
   const BATCH_SIZE = 3;
@@ -881,29 +950,45 @@ async function reportToUpdateHub(updates) {
         status: 'changed',
         extra: { platform: u.platform, build: u.build, downloadSize: u.downloadSize, updateType: u._updateType },
       };
-      const post = () => fetch(`${hubUrl}/api/projects/${PROJECT}/updates`, {
+      const post = () => fetchWithRetry(`${hubUrl}/api/projects/${PROJECT}/updates`, {
         method: 'POST',
         headers,
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
         body: JSON.stringify(payload),
       });
-      let res = await post();
-      if (res.status === 404) {
-        await registerProject();
+
+      let res;
+      try {
+        res = await post();
+      } catch (err) {
+        if (!is404(err)) throw err;
+        // 项目不存在：注册后重试一次（这个语义别改）。
+        // 注册本身失败时把原始 404 一起带上，否则只剩一个看不懂的注册错误。
+        try {
+          await registerProject();
+        } catch (regErr) {
+          throw new Error(`project missing (${err.message}) and registration failed: ${regErr.message}`);
+        }
         res = await post();
       }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json().catch(() => ({}));
+      if (result.recorded === false) {
+        throw new Error(result.error || 'hub rejected the update');
+      }
       console.log(`Update Hub: ${u.platform} ${u.version} → ${result.recorded ? 'OK' : result.error || 'unknown'}`);
       return result;
     }));
     results.push(...batchResults);
   }
 
-  // 统计失败数
-  const failed = results.filter(r => r.status === 'rejected');
+  // 统计失败数，并把失败明细打出来（原先只报总数，排查时看不到是哪个平台）
+  const failed = results
+    .map((r, i) => (r.status === 'rejected' ? { u: updates[i], err: r.reason } : null))
+    .filter(Boolean);
   if (failed.length > 0) {
     console.warn(`Update Hub: ${failed.length}/${updates.length} reports failed`);
+    for (const { u, err } of failed) {
+      console.warn(`  ${u.platform} ${u.version}: ${err && err.message || err}`);
+    }
   }
 }
 
@@ -981,10 +1066,12 @@ async function main() {
       u.firstSeen = prevSeen.get(`${u.version}-${u.build}`) || now;
     }
 
+    // 累积跨天版本历史（pmv 只给当前版本线，不累积算不出更新间隔）
     output.platforms[key] = {
       name: ALL_PLATFORMS[key].name,
       updates,
-      ...(pmvError ? { _fetchError: true } : {})
+      _history: updateHistory({ updates, _history: prevPlatform?._history }, now),
+      ...(pmvError && updates.length === 0 ? { _fetchError: true } : {})
     };
   }
 
@@ -992,7 +1079,10 @@ async function main() {
   if (prevData && prevData.platforms) {
     for (const [key, val] of Object.entries(prevData.platforms)) {
       if (!output.platforms[key]) {
-        output.platforms[key] = val;
+        // 清掉从上次继承来的 _fetchError：本平台这次没抓（PLATFORMS 过滤），
+        // 但下次纳入时不应因一条陈旧标记而跳过比对。_history 要保留。
+        const { _fetchError, ...rest } = val;
+        output.platforms[key] = rest;
       }
     }
   }
@@ -1118,8 +1208,8 @@ function generateMarkdown(data) {
     }
   }
 
-  // 更新间隔统计
-  const statsEntries = Object.entries(intervalStats).filter(([, s]) => s.avgDays);
+  // 更新间隔统计：只统计到距上次更新时也照样列出（历史还不够算平均间隔时 avgDays 为 '-'）
+  const statsEntries = Object.entries(intervalStats).filter(([, s]) => s.daysSinceLast != null);
   if (statsEntries.length > 0) {
     md += `\n## 📊 更新间隔统计\n\n`;
     md += `| 平台 | 平均间隔 | 距上次更新 | 历史间隔 |\n`;
@@ -1127,7 +1217,8 @@ function generateMarkdown(data) {
     for (const [key, s] of statsEntries) {
       const name = data.platforms[key]?.name || key;
       const history = s.history ? s.history.slice(0, 5).map(d => `${d}天`).join(' → ') : '-';
-      md += `| ${name} | ${s.avgDays}天 | ${s.daysSinceLast}天 | ${history} |\n`;
+      const avg = s.avgDays != null ? `${s.avgDays}天` : '-';
+      md += `| ${mdCell(name)} | ${avg} | ${s.daysSinceLast}天 | ${history} |\n`;
     }
   }
 

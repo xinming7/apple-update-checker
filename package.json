@@ -6,8 +6,15 @@
     "check": "node scripts/check-updates.js",
     "security": "node scripts/security-scanner.js",
     "rss": "node scripts/generate-rss.js",
-    "digest": "node scripts/daily-digest.js"
+    "digest": "node scripts/daily-digest.js",
+    "test": "node --test test/logic.test.js"
   },
-  "keywords": ["apple", "ios", "macos", "update", "github-actions"],
+  "keywords": [
+    "apple",
+    "ios",
+    "macos",
+    "update",
+    "github-actions"
+  ],
   "license": "MIT"
 }

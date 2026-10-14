@@ -31,7 +31,7 @@ function generateAtomFeed(data) {
       // CDATA 内是 HTML，需 escapeHtml 防注入（escapeXml 仅用于 XML 属性/元素值）
       let content = `<p><strong>${escapeHtml(u.platform)}</strong> ${escapeHtml(u.version)}${u.build ? ` (${escapeHtml(u.build)})` : ''}</p>`;
       content += `<ul>`;
-      if (u.postingDate || u.firstSeen) content += `<li>发布日期: ${new Date(u.postingDate || u.firstSeen).toLocaleDateString('zh-CN')}</li>`;
+      if (u.postingDate || u.firstSeen) content += `<li>发布日期: ${escapeHtml(new Date(u.postingDate || u.firstSeen).toLocaleDateString('zh-CN'))}</li>`;
       if (u.downloadSize) content += `<li>大小: ${formatSize(u.downloadSize)}</li>`;
       if (u._updateType) content += `<li>类型: ${updateTypeLabelPlain(u._updateType)}</li>`;
       content += `</ul>`;
@@ -123,6 +123,17 @@ ${entries}</feed>`;
 
 async function main() {
   console.log('=== RSS Feed Generator ===');
+
+  // REPO_URL 缺失时会把 feed 里所有链接写成 OWNER/REPO 占位符。
+  // 这个文件是要提交进仓库、给 RSS 阅读器订阅的，占位符会直接发布出去
+  // （历史上已经发生过一次：本地跑完误提交，覆盖了 Actions 生成的正确 URL）。
+  // 所以这里直接拒绝生成，而不是产出一份看起来正常的坏文件。
+  if (!process.env.REPO_URL && !process.env.GITHUB_REPOSITORY) {
+    console.error('ERROR: REPO_URL / GITHUB_REPOSITORY not set.');
+    console.error('Refusing to generate feed.xml with placeholder OWNER/REPO links.');
+    console.error('Set REPO_URL, e.g.: REPO_URL=https://github.com/xinming7/apple-update-checker node scripts/generate-rss.js');
+    process.exit(1);
+  }
 
   const dataFile = path.join(__dirname, '..', 'data', 'updates.json');
   if (!fs.existsSync(dataFile)) {

@@ -83,9 +83,11 @@ function parseSecurityPage(html) {
   }
 
   // 备用方案：提取 <a> 标签中的安全更新链接
+  // Apple 已从 /en-us/HT<digits> 换成 /en-us/<digits> 形式的公告 ID，
+  // 两种都接受，避免备用路径永远匹配不到。
   if (entries.length === 0) {
     console.log('  Table parsing failed, trying link extraction...');
-    const linkRegex = /<a[^>]+href="(https:\/\/support\.apple\.com\/en-us\/HT\d+[^"]*)"[^>]*>((?:iOS|iPadOS|macOS|watchOS|tvOS|visionOS|Safari)\s+[\d.]+[^<]*)<\/a>/gi;
+    const linkRegex = /<a[^>]+href="(https:\/\/support\.apple\.com\/en-us\/(?:HT\d+|\d+)[^"]*)"[^>]*>((?:iOS|iPadOS|macOS|watchOS|tvOS|visionOS|Safari)\s+[\d.]+[^<]*)<\/a>/gi;
     let linkMatch;
 
     while ((linkMatch = linkRegex.exec(html)) !== null) {
@@ -243,10 +245,14 @@ async function main() {
   const entries = await fetchSecurityUpdates();
 
   if (entries.length === 0) {
-    console.warn('No security entries found — possible HTML parse failure or Apple page changed.');
-    // 输出空结果但不阻断 workflow（后续步骤仍需运行）
-    const outputFile = path.join(dataDir, 'security.json');
-    fs.writeFileSync(outputFile, JSON.stringify({ lastScanned: new Date().toISOString(), totalEntries: 0, recentDetails: [], localMatches: [] }, null, 2));
+    // 表解析与备用链接解析都没命中 —— 大概率是 Apple 改版。
+    // 保留上一次的有效 security.json / SECURITY_STATUS.md 不覆盖（写空文件会清掉历史数据）。
+    // 用固定标记串报警，workflow 可 grep 到；但退出码保持 0，
+    // 否则一次页面改版会阻断后面的 RSS 生成与提交步骤。
+    console.warn('No security entries found — table and link parsing both failed (Apple page changed?).');
+    console.warn('Keeping previous security.json / SECURITY_STATUS.md untouched.');
+    console.log('');
+    console.log('=== SECURITY SCAN DEGRADED ===');
     return;
   }
 

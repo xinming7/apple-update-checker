@@ -148,15 +148,85 @@ function fmtDate(isoStr) {
 }
 
 /**
- * HTML 消息安全截断：避免把标签/属性拦腰切断导致 Telegram 解析失败
+ * HTML 消息安全截断：避免把标签/属性/实体拦腰切断导致 Telegram 解析失败。
+ *
+ * 单次 slice + 几个 replace 不够：切片点可能落在标签内部（`<a href="...`），
+ * 也可能落在实体内部（`&am`），还可能在成对标签中间切开子标签。
+ * 做法：按字符扫描 [0, limit)，把「被切断的标签/实体」丢掉，
+ * 再对剩下的片段做一次标签配对——配不上的开标签与多余的闭标签一并移除，
+ * 保证输出标签自平衡。
  */
 function truncateHtmlMessage(msg, maxLen = 4096) {
   if (msg.length <= maxLen) return msg;
-  let cut = msg.slice(0, maxLen - 30);
-  cut = cut.replace(/<[^>]*$/, '');
-  cut = cut.replace(/<a\s[^>]*>[^<]*$/i, '');
-  cut = cut.replace(/&[#a-zA-Z0-9]*$/, '');
-  return cut + '\n\n... (内容过长已截断)';
+
+  const TAIL = '\n\n... (内容过长已截断)';
+  const limit = maxLen - TAIL.length;
+
+  // 逐个 token 收集：[0, limit) 内的完整标签、完整实体、纯文本；切断的一律丢弃
+  const tokens = [];
+  let i = 0;
+  while (i < limit) {
+    if (msg[i] === '<') {
+      const close = msg.indexOf('>', i);
+      if (close === -1 || close >= limit) break; // 标签被拦腰切断，丢弃
+      tokens.push({ type: 'tag', text: msg.slice(i, close + 1) });
+      i = close + 1;
+      continue;
+    }
+    if (msg[i] === '&') {
+      const semi = msg.indexOf(';', i);
+      // 实体最长 32 字符；越界或不是合法实体就当普通文本
+      if (semi !== -1 && semi - i <= 32 && /^&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z]+)$/.test(msg.slice(i, semi + 1))) {
+        tokens.push({ type: 'text', text: msg.slice(i, semi + 1) });
+        i = semi + 1;
+        continue;
+      }
+      tokens.push({ type: 'text', text: '&' }); // 被切断的实体，降级为字面量
+      i++;
+      continue;
+    }
+    // 合并连续纯文本
+    let j = i;
+    while (j < limit && msg[j] !== '<' && msg[j] !== '&') j++;
+    tokens.push({ type: 'text', text: msg.slice(i, j) });
+    i = j;
+  }
+
+  // 标签配对：丢弃配不上的开标签与多余的闭标签
+  const stack = [];
+  const drop = new Set();
+  tokens.forEach((t, idx) => {
+    if (t.type !== 'tag') return;
+    const m = t.text.match(/^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9]*)/);
+    if (!m) { drop.add(idx); return; }
+    const [, slash, name] = m;
+    const lower = name.toLowerCase();
+    const selfClosing = /\/>$/.test(t.text) || /^(br|hr|img|input)$/.test(lower);
+    if (selfClosing && !slash) return;
+    if (slash) {
+      const at = stack.lastIndexOf(lower);
+      if (at === -1) drop.add(idx);        // 多余闭标签
+      else stack.splice(at, 1);
+    } else {
+      stack.push({ idx, name: lower });
+    }
+  });
+  for (const { idx } of stack) drop.add(idx); // 未闭合的开标签
+
+  const out = tokens.filter((_, idx) => !drop.has(idx)).map(t => t.text).join('');
+
+  // 极端情况：limit 内几乎全是未闭合标签（正文在 limit 之外），
+  // 配对后会把正文也一起丢掉，只剩截断提示 —— 那等于消息内容全没了。
+  // 这时退化成「剥掉全部标签的纯文本切片」，至少保住正文。
+  if (out.replace(/<[^>]*>/g, '').trim() === '') {
+    const plain = msg.slice(0, limit)
+      .replace(/<[^>]*>/g, '')      // 完整标签
+      .replace(/<[^>]*$/, '')       // 被切了一半的开标签
+      .replace(/&[^;\s]{0,32};?$/, ''); // 被切了一半的实体
+    if (plain.trim() !== '') return plain + TAIL;
+  }
+
+  return out + TAIL;
 }
 
 module.exports = {

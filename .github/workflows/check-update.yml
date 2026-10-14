@@ -49,8 +49,16 @@ jobs:
           fi
 
       # 第二步：扫描安全公告（CVE + release notes）
+      # 解析失败时脚本保留旧数据并输出 SECURITY SCAN DEGRADED（退出码仍为 0，不阻断后续步骤）
       - name: Scan security updates
-        run: node scripts/security-scanner.js
+        id: security
+        run: |
+          OUTPUT=$(node scripts/security-scanner.js 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "SECURITY SCAN DEGRADED"; then
+            echo "### ⚠️ 安全公告解析失败，已保留上次有效数据" >> $GITHUB_STEP_SUMMARY
+            echo "SECURITY_SCAN_DEGRADED" >> $GITHUB_STEP_SUMMARY
+          fi
 
       # 第三步：生成 RSS Feed
       - name: Generate RSS Feed
