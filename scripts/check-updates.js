@@ -17,12 +17,22 @@ const {
 
 // 平台定义
 const ALL_PLATFORMS = {
-  ios: { name: 'iOS' },
-  macos: { name: 'macOS' },
-  watchos: { name: 'watchOS' },
-  tvos: { name: 'tvOS' },
-  visionos: { name: 'visionOS' }
+  ios: { name: 'iOS', icon: '📱' },
+  macos: { name: 'macOS', icon: '💻' },
+  watchos: { name: 'watchOS', icon: '⌚' },
+  tvos: { name: 'tvOS', icon: '📺' },
+  visionos: { name: 'visionOS', icon: '🥽' }
 };
+
+/**
+ * 按平台显示名取图标（u.platform 存的是 name 而非 key，如 "iOS"）。
+ * 未知平台退回 📱，XProtect 用 🛡️。
+ */
+function platformIcon(name) {
+  if (name === 'XProtect') return '🛡️';
+  const hit = Object.values(ALL_PLATFORMS).find(p => p.name === name);
+  return hit ? hit.icon : '📱';
+}
 
 // Apple OTA mesu feeds（仅用于补充固件下载链接/大小）
 // 注意：watchOS/tvOS 路径带 watch/tv 前缀；macOS/visionOS 无公开 XML feed
@@ -832,7 +842,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
       for (const u of updates) {
         const typeLabel = updateTypeLabelTg(u._updateType);
         msg += `${typeLabel}\n`;
-        msg += `📱 <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
+        msg += `${platformIcon(u.platform)} <b>${escapeHtml(u.platform)}</b> ${escapeHtml(u.version)}`;
         if (u.build) msg += ` (${escapeHtml(u.build)})`;
         if (u.downloadSize) msg += ` [${formatSize(u.downloadSize)}]`;
         msg += `\n`;
@@ -849,7 +859,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
       const beta = betaByPlatform.get(platform);
       if (beta) {
         msg += `🧪 <b>Beta 版本</b>\n`;
-        msg += `📱 <b>${escapeHtml(beta.platform)}</b> ${escapeHtml(beta.version)}`;
+        msg += `${platformIcon(beta.platform)} <b>${escapeHtml(beta.platform)}</b> ${escapeHtml(beta.version)}`;
         if (beta.betaNumber) msg += ` Beta ${beta.betaNumber}`;
         msg += `\n\n`;
       }
@@ -861,7 +871,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
         if (!groups.includes(b.platform)) {
           msg += `#${b.platform}更新\n\n`;
           msg += `🧪 <b>Beta 版本</b>\n`;
-          msg += `📱 <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
+          msg += `${platformIcon(b.platform)} <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
           if (b.betaNumber) msg += ` Beta ${b.betaNumber}`;
           msg += `\n\n`;
         }
@@ -873,7 +883,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
     for (const b of betaUpdates) {
       msg += `#${b.platform}更新\n\n`;
       msg += `🧪 <b>Beta 版本</b>\n`;
-      msg += `📱 <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
+      msg += `${platformIcon(b.platform)} <b>${escapeHtml(b.platform)}</b> ${escapeHtml(b.version)}`;
       if (b.betaNumber) msg += ` Beta ${b.betaNumber}`;
       msg += `\n\n`;
     }
@@ -887,7 +897,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
       for (const [platform, s] of statEntries) {
         // 平台 key 是字典键，可能不属于 ALL_PLATFORMS（如历史遗留键）
         const known = ALL_PLATFORMS[platform];
-        const icon = known ? '📱' : '🛡️';
+        const icon = known ? known.icon : '🛡️';
         const name = known?.name || platform;
         msg += `${icon} ${escapeHtml(name)}: 距上次更新 ${s.daysSinceLast} 天`;
         if (s.avgDays) msg += `，平均每 ${s.avgDays} 天更新一次`;

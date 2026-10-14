@@ -124,11 +124,43 @@ test('security-scanner: 正则不误吞无关链接', () => {
   assert.strictEqual(LINK_RE.exec(html), null);
 });
 
-// ─── detectChanges 误报防护 ───────────────────────────────────
-
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+
+// ─── 平台图标映射 ─────────────────────────────────────────────
+
+function loadPlatformIcon() {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'check-updates.js'), 'utf-8');
+  const map = src.match(/const ALL_PLATFORMS = \{[\s\S]*?\n\};/);
+  const fn = src.match(/function platformIcon\(name\) \{[\s\S]*?\n\}/);
+  assert.ok(map && fn, '找不到 ALL_PLATFORMS / platformIcon');
+  return new Function(`${map[0]}\n${fn[0]}\nreturn { ALL_PLATFORMS, platformIcon };`)();
+}
+
+const { ALL_PLATFORMS, platformIcon } = loadPlatformIcon();
+
+test('platformIcon: 五个平台各有独立图标', () => {
+  const icons = Object.values(ALL_PLATFORMS).map(p => p.icon);
+  assert.strictEqual(icons.length, 5);
+  assert.strictEqual(new Set(icons).size, 5, `图标有重复: ${icons.join(' ')}`);
+  for (const p of Object.values(ALL_PLATFORMS)) {
+    assert.ok(p.icon, `${p.name} 缺图标`);
+  }
+});
+
+test('platformIcon: 按显示名取到正确图标', () => {
+  for (const [key, p] of Object.entries(ALL_PLATFORMS)) {
+    assert.strictEqual(platformIcon(p.name), p.icon, `${key} 图标不匹配`);
+  }
+});
+
+test('platformIcon: XProtect 用盾牌，未知平台回落手机', () => {
+  assert.strictEqual(platformIcon('XProtect'), '🛡️');
+  assert.strictEqual(platformIcon('unknownOS'), '📱');
+});
+
+// ─── detectChanges 误报防护 ───────────────────────────────────
 
 /**
  * 从 check-updates.js 抽出 detectChanges 需要真实模块。
