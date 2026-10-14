@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-13T09:05:40.804Z",
+  "lastChecked": "2026-10-14T07:15:55.818Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -91,17 +91,17 @@
     {
       "platform": "iOS",
       "version": "27.2",
-      "betaNumber": 3
+      "betaNumber": 4
     },
     {
       "platform": "macOS",
       "version": "27.2",
-      "betaNumber": 3
+      "betaNumber": 4
     },
     {
       "platform": "watchOS",
       "version": "27.2",
-      "betaNumber": 3
+      "betaNumber": 4
     },
     {
       "platform": "tvOS",
@@ -111,28 +111,28 @@
     {
       "platform": "visionOS",
       "version": "27.2",
-      "betaNumber": 3
+      "betaNumber": 4
     }
   ],
   "_intervalStats": {
     "ios": {
       "avgDays": 0,
-      "daysSinceLast": 1,
+      "daysSinceLast": 2,
       "history": [
         0
       ]
     },
     "macos": {
-      "daysSinceLast": 15
+      "daysSinceLast": 16
     },
     "watchos": {
-      "daysSinceLast": 15
+      "daysSinceLast": 16
     },
     "tvos": {
-      "daysSinceLast": 8
+      "daysSinceLast": 9
     },
     "visionos": {
-      "daysSinceLast": 8
+      "daysSinceLast": 9
     }
   }
 }
