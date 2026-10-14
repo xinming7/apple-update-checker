@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-14T07:15:55.818Z",
+  "lastChecked": "2026-10-14T21:04:16.069Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -24,6 +24,20 @@
           "_firmwareUrls": {},
           "firstSeen": "2026-10-07T12:33:16.136Z"
         }
+      ],
+      "_history": [
+        {
+          "version": "27.1",
+          "build": "24A94425",
+          "postingDate": "2026-10-12",
+          "firstSeen": "2026-10-13T09:05:40.804Z"
+        },
+        {
+          "version": "27.0.1",
+          "build": "24A9446",
+          "postingDate": "2026-10-12",
+          "firstSeen": "2026-10-07T12:33:16.136Z"
+        }
       ]
     },
     "macos": {
@@ -37,6 +51,14 @@
           "title": "macOS 27.0.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
+          "firstSeen": "2026-10-07T12:33:16.136Z"
+        }
+      ],
+      "_history": [
+        {
+          "version": "27.0.1",
+          "build": "26A5434",
+          "postingDate": "2026-09-28",
           "firstSeen": "2026-10-07T12:33:16.136Z"
         }
       ]
@@ -54,6 +76,14 @@
           "_firmwareUrls": {},
           "firstSeen": "2026-10-07T12:33:16.136Z"
         }
+      ],
+      "_history": [
+        {
+          "version": "27.0.1",
+          "build": "24R6365",
+          "postingDate": "2026-09-28",
+          "firstSeen": "2026-10-07T12:33:16.136Z"
+        }
       ]
     },
     "tvos": {
@@ -69,6 +99,14 @@
           "_firmwareUrls": {},
           "firstSeen": "2026-10-07T12:33:16.136Z"
         }
+      ],
+      "_history": [
+        {
+          "version": "27.0",
+          "build": "24J6361",
+          "postingDate": "2026-10-05",
+          "firstSeen": "2026-10-07T12:33:16.136Z"
+        }
       ]
     },
     "visionos": {
@@ -82,6 +120,14 @@
           "title": "visionOS 27.0.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
+          "firstSeen": "2026-10-07T12:33:16.136Z"
+        }
+      ],
+      "_history": [
+        {
+          "version": "27.0.1",
+          "build": "24M6372",
+          "postingDate": "2026-10-05",
           "firstSeen": "2026-10-07T12:33:16.136Z"
         }
       ]
@@ -116,11 +162,7 @@
   ],
   "_intervalStats": {
     "ios": {
-      "avgDays": 0,
-      "daysSinceLast": 2,
-      "history": [
-        0
-      ]
+      "daysSinceLast": 2
     },
     "macos": {
       "daysSinceLast": 16
