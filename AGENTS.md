@@ -28,14 +28,22 @@ Node.js 22 + 纯 JavaScript（CommonJS），零运行时依赖（`package.json` 
 
 ## 部署与 CI
 没有部署环节，CI 就是运行本体，两个工作流：
-- `.github/workflows/check-update.yml`：`schedule: cron '0 18,0,6,12 * * *'`（每 6 小时，北京 02:00 / 08:00 /
-  14:00 / 20:00）+ `workflow_dispatch`；
+
+**关于 cron 时间：别信名义值。** GitHub Actions 的 `schedule` 会延迟，官方文档说高负载时
+「delayed or dropped entirely」。实测本仓库 2026-10-01 ~ 10-14 的 12 次调度运行，名义 UTC 02:00
+的 cron 实际都落在 UTC 07:15~09:05，稳定偏晚 5~7 小时。所以判断"跑没跑"要看
+`gh run list`，不要按 cron 名义时间推断；也别按"每天固定某点"去设计依赖。
+
+- `.github/workflows/check-update.yml`（active）：`schedule: cron '0 18,0,6,12 * * *'`
+  （名义每 6 小时）+ `workflow_dispatch`；
   `concurrency: check-apple-updates`；权限 `contents: write, issues: write`。依次跑 check → security → rss，
   检测到新版本（输出含 `NEW UPDATES DETECTED`）时用 `actions/github-script` 建 Issue（同名去重），
   最后把 `data/`、`UPDATE_STATUS.md`、`SECURITY_STATUS.md`、`feed.xml` 以
   `chore: update Apple system info [date]` 提交回 `main`。
-- `.github/workflows/daily-digest.yml`：`cron '0 12 * * *'`（北京 20:00）+ `workflow_dispatch`，
-  跑 `scripts/daily-digest.js` 拉 update-hub 的 `/api/daily-digest` 再推 Telegram。
+- `.github/workflows/daily-digest.yml`（**已手动禁用 `disabled_manually`**，2026-09-25 后无运行）：
+  `cron '0 12 * * *'` + `workflow_dispatch`，跑 `scripts/daily-digest.js` 拉 update-hub 的
+  `/api/daily-digest` 再推 Telegram。禁用原因是与 update-hub 自己的 digest 重复推送
+  （见下方坑列表那条「两条链路」）。要改回这里推，先在 GitHub 上重新启用。
 仓库 Secret：`TELEGRAM_BOT_TOKEN`、`TELEGRAM_CHAT_ID`，可选 `UPDATE_HUB_URL`、`UPDATE_HUB_TOKEN`；
 仓库 Variable：`PLATFORMS`。无 Cloudflare 凭据，无 `wrangler deploy`。
 
