@@ -80,30 +80,52 @@ jobs:
           NEW_UPDATES: ${{ steps.check.outputs.new_updates }}
         with:
           script: |
-            const title = `🍎 Apple 系统更新 - ${new Date().toISOString().split('T')[0]}`;
+            // 标题日期用北京时间（项目约定的展示时区）。一天多次运行共用同一日期。
+            const bjDate = new Date(Date.now() + 8 * 3600000).toISOString().split('T')[0];
+            const title = `🍎 Apple 系统更新 - ${bjDate}`;
             const newUpdates = process.env.NEW_UPDATES || '';
             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
-            const body = `## 检测到新的 Apple 系统更新\n\n${newUpdates}\n\n详细信息请查看 [UPDATE_STATUS.md](${repoUrl}/blob/main/UPDATE_STATUS.md)\n\n安全公告: [SECURITY_STATUS.md](${repoUrl}/blob/main/SECURITY_STATUS.md)\n\nRSS Feed: [feed.xml](${repoUrl}/blob/main/feed.xml)\n\n---\n*由 GitHub Actions 自动创建*`;
+            const { owner, repo } = context.repo;
 
             const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner, repo,
               state: 'open',
               labels: 'apple-update',
               per_page: 100
             });
 
-            const existingIssue = issues.data.find(i => i.title === title);
-            if (existingIssue) {
-              console.log(`Issue already exists: #${existingIssue.number}`);
+            // 同日已有 Issue：把新发现追加为评论，不再整批吞掉（一天多次运行的第二批更新）
+            const existing = issues.data.find(i => i.title === title);
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: existing.number,
+                body: `## 追加检测到的新更新\n\n${newUpdates}`
+              });
+              console.log(`Appended to existing issue #${existing.number}`);
               return;
             }
 
+            // 创建新 Issue 前，关闭同标签的其他 open Issue，避免无限堆积
+            for (const old of issues.data) {
+              await github.rest.issues.update({
+                owner, repo,
+                issue_number: old.number,
+                state: 'closed'
+              });
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: old.number,
+                body: '已有更新的检测 Issue，自动关闭。'
+              });
+              console.log(`Closed old issue #${old.number}`);
+            }
+
+            const body = `## 检测到新的 Apple 系统更新\n\n${newUpdates}\n\n详细信息请查看 [UPDATE_STATUS.md](${repoUrl}/blob/main/UPDATE_STATUS.md)\n\n安全公告: [SECURITY_STATUS.md](${repoUrl}/blob/main/SECURITY_STATUS.md)\n\nRSS Feed: [feed.xml](${repoUrl}/blob/main/feed.xml)\n\n---\n*由 GitHub Actions 自动创建*`;
+
             const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body,
+              owner, repo,
+              title, body,
               labels: ['apple-update']
             });
             console.log(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
@@ -117,6 +139,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update Apple system info [$(date +%Y-%m-%d)]"
+            git commit -m "chore: update Apple system info [$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M')]"
             git push
           fi
