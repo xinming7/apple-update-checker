@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/10/15 19:31:34
+> 最后扫描: 2026/10/16 23:41:48
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
@@ -29,9 +29,6 @@
 **CVE 列表**:
 - CVE-2026-86950
 
-**影响描述**:
-- Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27.
-
 ### macOS Tahoe 26.7.1
 
 - **平台**: macOS
@@ -45,9 +42,6 @@
 **CVE 列表**:
 - CVE-2026-86950
 
-**影响描述**:
-- Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27.
-
 ### macOS Sequoia 15.8.1
 
 - **平台**: macOS
@@ -60,9 +54,6 @@
 
 **CVE 列表**:
 - CVE-2026-86950
-
-**影响描述**:
-- Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27.
 
 ## 📚 完整安全公告索引
 

@@ -1,5 +1,5 @@
 {
-  "lastScanned": "2026-10-15T11:31:34.266Z",
+  "lastScanned": "2026-10-16T15:41:48.022Z",
   "totalEntries": 259,
   "recentDetails": [
     {
@@ -12,9 +12,7 @@
       "cves": [
         "CVE-2026-86950"
       ],
-      "descriptions": [
-        "Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27."
-      ],
+      "descriptions": [],
       "summary": "Available for: iPhone 11 and later, iPad Pro 12.9-inch 3rd generation and later, iPad Pro 11-inch 1st generation and later, iPad Air 3rd generation and later, iPad 8th generation and later, and iPad mini 5th generation and later",
       "detailDate": "September 28, 2026"
     },
@@ -28,9 +26,7 @@
       "cves": [
         "CVE-2026-86950"
       ],
-      "descriptions": [
-        "Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27."
-      ],
+      "descriptions": [],
       "summary": "Available for: macOS Tahoe",
       "detailDate": "September 28, 2026"
     },
@@ -44,9 +40,7 @@
       "cves": [
         "CVE-2026-86950"
       ],
-      "descriptions": [
-        "Processing a maliciously crafted file may lead to arbitrary code execution. Apple is aware of a report that this issue may have been exploited in an extremely sophisticated attack against specific targeted individuals on versions of iOS before iOS 27."
-      ],
+      "descriptions": [],
       "summary": "Available for: macOS Sequoia",
       "detailDate": "September 28, 2026"
     }
