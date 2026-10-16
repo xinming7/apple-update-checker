@@ -481,3 +481,51 @@ test('matchWithLocalData: 平台有多条更新时遍历全部，不只看第一
   assert.strictEqual(m[0].version, '27.0', '应匹配到第二条而不是放弃');
   fsp.rmSync(dir, { recursive: true, force: true });
 });
+
+// ─── 健壮性修复回归（2026-10-16）────────────────────────────────
+// 三处：摘要/描述解码 HTML 实体、Impact 描述不再被 < 截断、Markdown 渲染裸插套 mdCell
+
+const {
+  decodeEntities, parseDetailPage, generateSecurityMarkdown,
+} = require('../scripts/security-scanner');
+
+test('decodeEntities: 剥标签后残留的实体被解码', () => {
+  assert.strictEqual(decodeEntities('iOS &amp; iPadOS &lt;27&gt;'), 'iOS & iPadOS <27>');
+  assert.strictEqual(decodeEntities('&quot;quoted&quot; &apos;s &nbsp;space'), '"quoted" \'s  space');
+});
+
+test('parseDetailPage: summary 解码实体而非保留 &amp;', () => {
+  const html = [
+    '<h2 class="gb-header">iOS 26.7.1 and iPadOS 26.7.1</h2>',
+    '<div class="note gb-note"><p>Released September 28, 2026</p></div>',
+    '<p class="gb-paragraph">Available for: iPhone 11 &amp; later, iPad Pro 11-inch</p>',
+  ].join('\n');
+  const r = parseDetailPage(html);
+  assert.ok(r.summary, '应抓到 Available for 摘要');
+  assert.ok(!r.summary.includes('&amp;'), '实体应已解码');
+  assert.ok(r.summary.includes('iPhone 11 & later'), '& 应是真实字符');
+});
+
+test('parseDetailPage: Impact 描述含 < 时不截断、实体被解码', () => {
+  const html = '<p>Impact: An app may read sensitive data &lt;from&gt; a user&apos;s device</p>';
+  const r = parseDetailPage(html);
+  assert.strictEqual(r.descriptions.length, 1);
+  assert.strictEqual(r.descriptions[0], 'An app may read sensitive data <from> a user\'s device');
+});
+
+test('generateSecurityMarkdown: 摘要/描述里的 | 被转义，不破坏表格', () => {
+  const data = {
+    lastScanned: new Date().toISOString(),
+    totalEntries: 1,
+    localMatches: [],
+    recentDetails: [{
+      title: 'iOS 26.7.1', platform: 'iOS', version: '26.7.1',
+      date: '28 Sep 2026', cveCount: 1, url: 'https://example.com/x',
+      summary: 'a | b', cves: ['CVE-2026-0001'], descriptions: ['x | y\nz'],
+    }],
+  };
+  const md = generateSecurityMarkdown(data);
+  assert.ok(md.includes('a \\| b'), '摘要中的 | 应被转义');
+  assert.ok(md.includes('x \\| y'), '描述中的 | 应被转义');
+  assert.ok(!md.includes('\nz'), '描述中的换行应被压成空格');
+});

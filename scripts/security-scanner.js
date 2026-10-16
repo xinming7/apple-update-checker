@@ -162,6 +162,17 @@ async function fetchSecurityDetail(url) {
   }
 }
 
+/** 解码常见 HTML 实体（剥标签后残留的 &amp;/&lt;/&gt;/&quot;/&#39; 等） */
+function decodeEntities(s) {
+  return String(s)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;|&#0?39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+}
+
 function parseDetailPage(html) {
   const cves = [];
   const descriptions = [];
@@ -180,10 +191,11 @@ function parseDetailPage(html) {
   }
 
   // 提取描述段落（影响说明）— 只匹配紧跟版本信息或安全公告正文中的 Impact
-  const impactRegex = /(?:<li|<p|<td)[^>]*>[^<]*Impact[:\s]+([^<]+)/gi;
+  // 描述捕获到行尾或下一个标签边界；先剥标签再解码实体，避免 [^<]+ 在含 < 的文本处截断
+  const impactRegex = /(?:<li|<p|<td)[^>]*>[^<]*Impact[:\s]+([^<]+(?:<[^>]+>[^<]*)*)/gi;
   let impactMatch;
   while ((impactMatch = impactRegex.exec(html)) !== null) {
-    const desc = impactMatch[1].trim();
+    const desc = decodeEntities(impactMatch[1].replace(/<[^>]+>/g, '')).trim();
     if (desc.length > 5 && desc.length < 500) {
       descriptions.push(desc);
     }
@@ -201,7 +213,7 @@ function parseDetailPage(html) {
     const avail = versionSection.body.match(
       /<p[^>]*class="[^"]*gb-paragraph[^"]*"[^>]*>((?:Available for|Impact):[\s\S]*?)<\/p>/i
     );
-    if (avail) summary = avail[1].replace(/<[^>]+>/g, '').trim().slice(0, 500);
+    if (avail) summary = decodeEntities(avail[1].replace(/<[^>]+>/g, '')).trim().slice(0, 500);
   }
 
   return {
@@ -498,14 +510,14 @@ function generateSecurityMarkdown(data) {
       md += `- **详情**: [${entry.url}](${entry.url})\n`;
 
       if (entry.summary) {
-        md += `\n**摘要**: ${entry.summary}\n`;
+        md += `\n**摘要**: ${mdCell(entry.summary)}\n`;
       }
 
       if (entry.cves && entry.cves.length > 0) {
         md += `\n**CVE 列表**:\n`;
         const displayCves = entry.cves.slice(0, 10);
         for (const cve of displayCves) {
-          md += `- ${cve}\n`;
+          md += `- ${mdCell(cve)}\n`;
         }
         if (entry.cves.length > 10) {
           md += `- ... 还有 ${entry.cves.length - 10} 个\n`;
@@ -515,7 +527,7 @@ function generateSecurityMarkdown(data) {
       if (entry.descriptions && entry.descriptions.length > 0) {
         md += `\n**影响描述**:\n`;
         for (const desc of entry.descriptions.slice(0, 5)) {
-          md += `- ${desc}\n`;
+          md += `- ${mdCell(desc)}\n`;
         }
       }
 
@@ -537,6 +549,8 @@ module.exports = {
   parseSecurityPage,
   parseDetailPage,
   findVersionSection,
+  decodeEntities,
+  generateSecurityMarkdown,
   detectDegraded,
   sendDegradedAlert,
   matchWithLocalData,
