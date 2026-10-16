@@ -908,7 +908,7 @@ function formatTelegramMessage(newUpdates, intervalStats, betaUpdates) {
   }
 
   const repoUrl = process.env.REPO_URL || `https://github.com/${process.env.GITHUB_REPOSITORY || 'OWNER/REPO'}`;
-  msg += `🔗 <a href="${repoUrl}/blob/main/UPDATE_STATUS.md">查看详细信息</a>`;
+  msg += `🔗 <a href="${escapeHtml(repoUrl)}/blob/main/UPDATE_STATUS.md">查看详细信息</a>`;
 
   // 截断放在最后
   return truncateHtmlMessage(msg);
@@ -1119,7 +1119,9 @@ async function main() {
   const changeResult = detectChanges(output, dataDir);
   const newUpdates = changeResult?.updates || [];
   const betaChanges = changeResult?.betaChanges || [];
-  if (xpResult && newUpdates.length > 0) {
+  // XProtect 单独更新也要上报：旧写法要求 newUpdates.length > 0，
+  // 而 XProtect 独自更新（唯一真实场景）时该数组为空，等于永不通知。
+  if (xpResult) {
     newUpdates.push(xpResult);
   }
 

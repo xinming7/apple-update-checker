@@ -8,6 +8,27 @@ const { fetchWithRetry, mdCell } = require('./utils');
 
 const APPLE_SECURITY_URL = 'https://support.apple.com/en-us/100100';
 
+// 列表页日期格式实测为英式 "28 Sep 2026"（不是美式 "Sep 28, 2026"）。
+// 2026-10-15 抓取线上页面复跑：旧正则 259/259 全 null。
+const LIST_DATE_RE = /\b(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4})\b/;
+
+// 详情页日期格式是另一套：全月名 "Released September 28, 2026"。
+const DETAIL_DATE_RE = /Released\s+([A-Z][a-z]+\s+\d{1,2},\s*\d{4})/;
+
+// 版本号提取：平台名优先（macOS 要吃掉 "Tahoe"/"Sequoia" 这类代号，否则取到代号后的版本反而对，
+// 但 regex 会先撞上代号前的空位），取不到再退回「标题里最后一个版本号」。
+// 实测线上 235 条含版本号的条目：平台名命中 221，退回通用补齐到 235。
+const PLATFORM_VERSION_RE = /(?:iOS|iPadOS|macOS(?:\s+[A-Z][a-z]+)?|watchOS|tvOS|visionOS|Safari|Xcode)\s+(\d+(?:\.\d+)*)/i;
+
+function extractVersion(title) {
+  const m = title.match(PLATFORM_VERSION_RE);
+  if (m) return m[1];
+  // 退回通用：取最后一个版本号。AirPlay SDK 那种 "2.7.1 and 3.6.0.126" 会取到后者，
+  // 属可接受的次要误差（该条本来就没有单一版本号）。
+  const all = [...title.matchAll(/\d+(?:\.\d+)*/g)];
+  return all.length ? all[all.length - 1][0] : null;
+}
+
 /**
  * 从 Apple 安全公告页面提取更新条目
  * Apple 页面使用 JSON-LD 结构化数据，每个更新是一个 <tr> 或嵌入的 JSON
@@ -48,13 +69,12 @@ function parseSecurityPage(html) {
     // 只处理 Apple 安全更新链接
     if (!href.includes('support.apple.com') || !title) continue;
 
-    // 提取日期
-    const dateMatch = row.match(/(\w+ \d{1,2},\s*\d{4})/);
+    // 提取日期（英式 "28 Sep 2026"）
+    const dateMatch = row.match(LIST_DATE_RE);
     const dateStr = dateMatch ? dateMatch[1] : null;
 
     // 提取版本号（从标题中）
-    const versionMatch = title.match(/([\d]+\.[\d]+(?:\.[\d]+)?)/);
-    const version = versionMatch ? versionMatch[1] : null;
+    const version = extractVersion(title);
 
     // 识别平台
     let platform = 'Unknown';
@@ -102,8 +122,7 @@ function parseSecurityPage(html) {
       else if (/visionOS/i.test(title)) platform = 'visionOS';
       else if (/Safari/i.test(title)) platform = 'Safari';
 
-      const versionMatch = title.match(/([\d]+\.[\d]+(?:\.[\d]+)?)/);
-      const version = versionMatch ? versionMatch[1] : null;
+      const version = extractVersion(title);
 
       entries.push({
         title,
@@ -170,21 +189,50 @@ function parseDetailPage(html) {
     }
   }
 
-  // 提取 release notes 摘要
-  const summaryMatch = html.match(/<p[^>]*class="[^"]*gb-paragraph[^"]*"[^>]*>([\s\S]*?)<\/p>/i)
-    || html.match(/About this update[\s\S]*?<p>([\s\S]*?)<\/p>/i);
+  // 定位「版本」标题（h2）：跳过页面顶部的 "About Apple security updates"，
+  // 取其后第一个真正的版本小节。旧实现取全页第一个 gb-paragraph，
+  // 实测抓到的永远是免责声明（"For our customers' protection, Apple doesn't disclose..."），
+  // 已实际写进 data/security.json。
+  const versionSection = findVersionSection(html);
 
   let summary = null;
-  if (summaryMatch) {
-    summary = summaryMatch[1].replace(/<[^>]+>/g, '').trim().slice(0, 500);
+  if (versionSection) {
+    // 摘要取「该版本小节的首个 Available for 段落」，这是真正有信息量的正文
+    const avail = versionSection.body.match(
+      /<p[^>]*class="[^"]*gb-paragraph[^"]*"[^>]*>((?:Available for|Impact):[\s\S]*?)<\/p>/i
+    );
+    if (avail) summary = avail[1].replace(/<[^>]+>/g, '').trim().slice(0, 500);
   }
 
   return {
     cves: cves.slice(0, 50), // 限制数量
     cveCount: cves.length,
     descriptions: [...new Set(descriptions)].slice(0, 10),
-    summary
+    summary,
+    // 详情页的发布日期是另一套格式（"Released September 28, 2026"），列表页解析不出时用它兜底
+    detailDate: versionSection && versionSection.date ? versionSection.date : null
   };
+}
+
+/**
+ * 从详情页定位版本小节，返回 { title, date, body }。
+ * Apple 详情页结构：<h2 class="gb-header">iOS 26.7.1 and iPadOS 26.7.1</h2>
+ *                  <div class="note gb-note"><p>Released September 28, 2026</p></div>
+ *                  <h3 class="gb-header">CoreGraphics</h3> ...
+ * 页面第一个 h2 是 "About Apple security updates"，必须跳过。
+ */
+function findVersionSection(html) {
+  const h2Regex = /<h2[^>]*class="[^"]*gb-header[^"]*"[^>]*>([\s\S]*?)<\/h2>/gi;
+  let m;
+  while ((m = h2Regex.exec(html)) !== null) {
+    const title = m[1].replace(/<[^>]+>/g, '').trim();
+    if (/^About\b/i.test(title)) continue;
+
+    const body = html.slice(m.index + m[0].length);
+    const dateMatch = body.match(DETAIL_DATE_RE);
+    return { title, date: dateMatch ? dateMatch[1] : null, body };
+  }
+  return null;
 }
 
 /**
@@ -198,29 +246,47 @@ function matchWithLocalData(securityEntries, dataDir) {
     const data = JSON.parse(fs.readFileSync(updatesFile, 'utf-8'));
     const matches = [];
 
+    // 版本段比较。Apple 公告里的版本号可能是只有 major 的 "27"，
+    // 而本地 updates.json 是 "27.0.1"；旧的 seg2（直接切两段）让 "27" vs "27.0"
+    // 永远不相等，导致 seg2 无法衔接这两种写法。
+    // 规则：短的一方按位补齐后前缀匹配（"27" → 匹配 "27.0.1"；"16.5" 不匹配 "16.51"）。
+    const seg2 = (v) => v.split('.').slice(0, 2).join('.');
+    const versionPrefixMatch = (local, announced) => {
+      const a = local.split('.');
+      const b = announced.split('.');
+      const n = Math.min(a.length, b.length);
+      for (let i = 0; i < n; i++) {
+        if (a[i] !== b[i]) return false;
+      }
+      return true;
+    };
+
     for (const [key, platform] of Object.entries(data.platforms)) {
       if (!platform.updates || platform.updates.length === 0) continue;
 
-      const latest = platform.updates[0];
-      if (!latest || !latest.version) continue;
+      // 遍历该平台的全部版本，而不是只看 updates[0]。
+      // Apple 一次会发多条（实测 iOS 有 27.1 + 27.0.1），只看首条会让第二条永远匹配不上。
+      for (const u of platform.updates) {
+        if (!u || !u.version) continue;
 
-      // 在安全公告中查找匹配的版本（按 major.minor 段精确比较，避免 "16.51" 误配 "16.5"）
-      const seg2 = (v) => v.split('.').slice(0, 2).join('.');
-      const matchedEntry = securityEntries.find(e =>
-        e.platform === platform.name &&
-        e.version &&
-        seg2(latest.version) === seg2(e.version)
-      );
+        // 优先精确的 major.minor 比较，退回到前缀比较（处理公告只写 major 的情况）
+        const matchedEntry = securityEntries.find(e =>
+          e.platform === platform.name &&
+          e.version &&
+          (seg2(u.version) === seg2(e.version) || versionPrefixMatch(u.version, e.version))
+        );
 
-      if (matchedEntry) {
-        matches.push({
-          platform: platform.name,
-          version: latest.version,
-          build: latest.build,
-          securityUrl: matchedEntry.url,
-          securityTitle: matchedEntry.title,
-          cveCount: matchedEntry.cveCount
-        });
+        if (matchedEntry) {
+          matches.push({
+            platform: platform.name,
+            version: u.version,
+            build: u.build,
+            securityUrl: matchedEntry.url,
+            securityTitle: matchedEntry.title,
+            cveCount: matchedEntry.cveCount
+          });
+          break; // 每个平台只报最新一个匹配到的版本
+        }
       }
     }
 
@@ -251,43 +317,78 @@ async function main() {
     // 否则一次页面改版会阻断后面的 RSS 生成与提交步骤。
     console.warn('No security entries found — table and link parsing both failed (Apple page changed?).');
     console.warn('Keeping previous security.json / SECURITY_STATUS.md untouched.');
+    await sendDegradedAlert('列表页零条目：表格解析与备用链接解析都没命中');
     console.log('');
     console.log('=== SECURITY SCAN DEGRADED ===');
     return;
   }
 
-  // 获取最近 3 个条目的详细信息（并行请求）
-  const recentEntries = entries.slice(0, 3);
+  // 先做本地匹配，再只对「被匹配到的」条目抓详情。
+  // 旧实现固定抓前 3 条（slice(0,3)）并把 cveCount 回填到 entries[i] ——
+  // i 恰好与 slice 下标对齐纯属巧合；且任何不在前 3 的匹配版本 cveCount 恒为 0，
+  // 使这个模块最有价值的输出（"你正在跑的版本修了哪些 CVE"）拿不到。
+  const matches = matchWithLocalData(entries, dataDir);
+
+  // 需要详情的条目：被匹配到的那些（按 url 去重），外加列表最新的 3 条（保持原有展示行为）
+  const detailUrls = [...new Set([
+    ...entries.slice(0, 3).map(e => e.url),
+    ...matches.map(m => m.securityUrl),
+  ])];
   const detailResults = await Promise.allSettled(
-    recentEntries.map(entry => fetchSecurityDetail(entry.url))
+    detailUrls.map(url => fetchSecurityDetail(url))
   );
 
-  const details = [];
-  for (let i = 0; i < recentEntries.length; i++) {
+  const detailByUrl = new Map();
+  for (let i = 0; i < detailUrls.length; i++) {
     const result = detailResults[i];
     if (result.status === 'fulfilled' && result.value) {
-      const detail = result.value;
-      // CVE 数量回填到原始 entries 列表中
-      entries[i].cveCount = detail.cveCount;
-      details.push({
-        ...recentEntries[i],
-        ...detail
-      });
+      detailByUrl.set(detailUrls[i], result.value);
     }
   }
 
-  // 与本地数据匹配
-  const matches = matchWithLocalData(entries, dataDir);
+  // CVE 数量回填到原始 entries 列表（按 url 查表，不再依赖下标对齐）
+  for (const entry of entries) {
+    const d = detailByUrl.get(entry.url);
+    if (d) {
+      entry.cveCount = d.cveCount;
+      entry.date = entry.date || d.detailDate; // 列表页解析不出时用详情页日期兜底
+    }
+  }
+
+  // 展示用的详情：列表最新的 3 条
+  const recentEntries = entries.slice(0, 3);
+  const details = recentEntries
+    .map(e => (detailByUrl.has(e.url) ? { ...e, ...detailByUrl.get(e.url) } : null))
+    .filter(Boolean);
+
+  // 重新匹配：此时 cveCount 才回填完。第一次匹配只用来确定「该抓哪些详情页」。
+  const finalMatches = matchWithLocalData(entries, dataDir);
 
   // 输出结果
   const output = {
     lastScanned: new Date().toISOString(),
     totalEntries: entries.length,
     recentDetails: details,
-    localMatches: matches
+    localMatches: finalMatches,
+    // 落盘全部条目：旧实现只写 recentDetails(3条) + localMatches，
+    // 259 条解析结果从不保存，导致字段解析错（如 date 全 null）没有任何事后诊断手段。
+    entries
   };
 
+  // 护栏：解析结果明显异常时拒绝覆盖，避免把好数据写坏。
+  // 触发条件：条目数骤降 >50%，或绝大多数条目的日期解析失败。
   const outputFile = path.join(dataDir, 'security.json');
+  const degraded = detectDegraded(entries, outputFile);
+  if (degraded) {
+    console.warn('');
+    console.warn(`DEGRADED: ${degraded}`);
+    console.warn('Keeping previous security.json / SECURITY_STATUS.md untouched.');
+    await sendDegradedAlert(degraded);
+    console.log('');
+    console.log('=== SECURITY SCAN DEGRADED ===');
+    return;
+  }
+
   fs.writeFileSync(outputFile, JSON.stringify(output, null, 2));
   console.log(`\nSaved to ${outputFile}`);
 
@@ -303,11 +404,67 @@ async function main() {
   for (const d of details) {
     console.log(`  ${d.platform} ${d.version}: ${d.cveCount} CVEs`);
   }
-  if (matches.length > 0) {
-    console.log(`Matched with local updates: ${matches.length}`);
-    for (const m of matches) {
+  if (finalMatches.length > 0) {
+    console.log(`Matched with local updates: ${finalMatches.length}`);
+    for (const m of finalMatches) {
       console.log(`  ${m.platform} ${m.version}: ${m.cveCount} CVEs → ${m.securityUrl}`);
     }
+  }
+}
+
+/**
+ * 解析结果异常检测。返回 null 表示正常，返回字符串表示降级原因。
+ * 目的是把「静默产出垃圾数据」变成「下一次运行就报出来」——
+ * 旧的 date 正则在真实页面上 259/259 全 null，却因为没有任何自检而飘了很久。
+ */
+function detectDegraded(entries, outputFile) {
+  if (entries.length === 0) return 'no entries parsed';
+
+  // 日期解析失败率：列表页与详情页的日期格式是两套，任一改版都会整批失效
+  const noDate = entries.filter(e => !e.date).length;
+  if (noDate / entries.length > 0.9) {
+    return `${noDate}/${entries.length} entries have no date (Apple changed the date format?)`;
+  }
+
+  // 条目数骤降：与上一份比对，掉一半以上多半是页面改版而非真的没有更新
+  try {
+    if (fs.existsSync(outputFile)) {
+      const prev = JSON.parse(fs.readFileSync(outputFile, 'utf-8'));
+      if (prev.totalEntries > 20 && entries.length < prev.totalEntries * 0.5) {
+        return `entry count dropped ${prev.totalEntries} → ${entries.length} (page changed?)`;
+      }
+    }
+  } catch {
+    // 上一份读不出来就不比较，不影响本次写入
+  }
+
+  return null;
+}
+
+/**
+ * DEGRADED 告警：只写 Step Summary 等于没告警（没人主动去看），这里补一条 Telegram。
+ * 刻意做成「失败也不影响主流程」的旁路：解析器坏了不应该让整个工作流挂掉。
+ */
+async function sendDegradedAlert(reason) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    console.log('Telegram not configured, DEGRADED alert only in logs.');
+    return;
+  }
+  const text = `⚠️ <b>Apple 安全公告解析降级</b>\n\n${String(reason).replace(/[<>&]/g, '')}\n\n`
+    + `已保留上一次的有效数据，未覆盖 <code>data/security.json</code>。\n`
+    + `<a href="https://support.apple.com/en-us/100100">查看 Apple 公告页</a>`;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      signal: AbortSignal.timeout(15000),
+    });
+    console.log(res.ok ? 'DEGRADED alert sent to Telegram.' : `DEGRADED alert failed: HTTP ${res.status}`);
+  } catch (err) {
+    console.warn(`DEGRADED alert failed: ${err.message}`);
   }
 }
 
@@ -374,7 +531,23 @@ function generateSecurityMarkdown(data) {
   return md;
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+// 供测试直接引用（本文件作为脚本运行时下面的 main() 才会执行）
+module.exports = {
+  extractVersion,
+  parseSecurityPage,
+  parseDetailPage,
+  findVersionSection,
+  detectDegraded,
+  sendDegradedAlert,
+  matchWithLocalData,
+  LIST_DATE_RE,
+  DETAIL_DATE_RE,
+  PLATFORM_VERSION_RE,
+};
+
+if (require.main === module) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}

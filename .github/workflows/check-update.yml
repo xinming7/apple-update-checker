@@ -57,6 +57,10 @@ jobs:
       # 解析失败时脚本保留旧数据并输出 SECURITY SCAN DEGRADED（退出码仍为 0，不阻断后续步骤）
       - name: Scan security updates
         id: security
+        env:
+          # 降级时脚本自己发 Telegram 告警（只写 Step Summary 等于没告警）
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           OUTPUT=$(node scripts/security-scanner.js 2>&1)
           echo "$OUTPUT"

@@ -356,3 +356,128 @@ test('updateHistory: 超过上限时截断到 HISTORY_LIMIT', () => {
   const merged = updateHistory({ updates: many, _history: [] }, now);
   assert.strictEqual(merged.length, 20, '应截断到 20 条');
 });
+
+// ─── security-scanner 解析正则（2026-10-15 用线上真实页面回归）─────────
+// 背景：这三个正则原先都是按「想象的 Apple 页面格式」写的，实测全错：
+// 日期 259/259 全 null、24 条版本号解析不出、摘要抓到的是免责声明。
+// 下面用真实页面的片段做断言，改坏立刻能发现。
+
+const {
+  extractVersion, parseSecurityPage, findVersionSection, detectDegraded, LIST_DATE_RE,
+  PLATFORM_VERSION_RE,
+} = require('../scripts/security-scanner');
+
+test('security-scanner: 列表页日期是英式 "28 Sep 2026"', () => {
+  const row = '<td><p class="gb-paragraph">28 Sep 2026</p></td>';
+  const m = row.match(LIST_DATE_RE);
+  assert.ok(m, '英式日期应当匹配');
+  assert.strictEqual(m[1], '28 Sep 2026');
+});
+
+test('security-scanner: 美式日期 "Sep 28, 2026" 不再被当作列表页格式', () => {
+  // 列表页实测为 0 处美式日期；这个断言锁定格式选择，防止改回旧正则
+  assert.strictEqual('Sep 28, 2026'.match(LIST_DATE_RE), null);
+});
+
+test('security-scanner: 平台名正则本身锁定（隔离于通用兜底）', () => {
+  // extractVersion 有「平台名匹配 → 退回通用匹配」两级，通用兜底会掩盖平台分支的退化。
+  // 这里直接断言 PLATFORM_VERSION_RE，改坏它立刻失败。
+  const cases = [
+    ['iOS 27 and iPadOS 27', '27'],              // 无小数点，旧正则整条返回 null
+    ['macOS Tahoe 26.7.1', '26.7.1'],            // 代号必须被吃掉
+    ['macOS Sequoia 15.8.1', '15.8.1'],
+    ['iOS 26.7.1 and iPadOS 17.7.10', '26.7.1'], // 必须取 iOS 的，不是后面的旧版本
+  ];
+  for (const [title, want] of cases) {
+    const m = title.match(PLATFORM_VERSION_RE);
+    assert.ok(m, `平台名未匹配: ${title}`);
+    assert.strictEqual(m[1], want, `取错版本: ${title}`);
+  }
+});
+
+test('security-scanner: 版本号提取覆盖 macOS 代号与 iPadOS 并列', () => {
+  const cases = [
+    ['iOS 26.7.1 and iPadOS 26.7.1', '26.7.1'],
+    ['iOS 27 and iPadOS 27', '27'],           // 旧正则对这类返回 null（实测 24 条）
+    ['macOS Tahoe 26.7.1', '26.7.1'],          // 代号必须被吃掉，否则取不到
+    ['macOS Sequoia 15.8.1', '15.8.1'],
+    ['watchOS 27.0.1', '27.0.1'],
+    ['Keynote 15.1', '15.1'],                  // 非平台名，退回通用匹配
+    ['GarageBand 10.4.12', '10.4.12'],
+  ];
+  for (const [title, want] of cases) {
+    assert.strictEqual(extractVersion(title), want, `解析错误: ${title}`);
+  }
+});
+
+test('security-scanner: 解析不出日期时降级为 null 而不是乱取数字', () => {
+  const html = '<tr><td><a href="https://support.apple.com/en-us/149226">iOS 26.7.1</a></td></tr>';
+  const entries = parseSecurityPage(html);
+  assert.strictEqual(entries.length, 1);
+  assert.strictEqual(entries[0].date, null);
+  assert.strictEqual(entries[0].version, '26.7.1');
+});
+
+// ─── detectDegraded 护栏 ──────────────────────────────────────
+
+test('detectDegraded: 日期整批解析失败时判定降级', () => {
+  const entries = Array.from({ length: 100 }, (_, i) => ({ title: `t${i}`, date: null, version: '1.0' }));
+  assert.match(detectDegraded(entries, '/nonexistent'), /no date/);
+});
+
+test('detectDegraded: 日期正常时不判定降级', () => {
+  const entries = Array.from({ length: 100 }, (_, i) => ({ title: `t${i}`, date: '28 Sep 2026' }));
+  assert.strictEqual(detectDegraded(entries, '/nonexistent'), null);
+});
+
+test('detectDegraded: 零条目判定降级', () => {
+  assert.match(detectDegraded([], '/nonexistent'), /no entries/);
+});
+
+// ─── matchWithLocalData 版本衔接（2026-10-15 实测修复）────────────
+// 旧实现用 seg2 直接切两段，公告写 "27"、本地写 "27.0.1" 时永不相等，
+// 导致 localMatches 恒为空（实测 2026-10-15 线上确为 []）。
+
+const { matchWithLocalData } = require('../scripts/security-scanner');
+const fsp = require('node:fs');
+const nodePath = require('node:path');
+
+/** 造一个临时 dataDir，写入给定的 updates.json */
+function makeDataDir(platforms) {
+  const dir = fsp.mkdtempSync(nodePath.join(os.tmpdir(), 'uh-test-'));
+  fsp.writeFileSync(nodePath.join(dir, 'updates.json'), JSON.stringify({ platforms }));
+  return dir;
+}
+
+test('matchWithLocalData: 公告只写 major "27" 时能匹配本地 "27.0.1"', () => {
+  const dir = makeDataDir({
+    ios: { name: 'iOS', updates: [{ version: '27.0.1', build: '24A1' }] },
+  });
+  const entries = [{ platform: 'iOS', version: '27', title: 'iOS 27', url: 'u1', cveCount: 126 }];
+  const m = matchWithLocalData(entries, dir);
+  assert.strictEqual(m.length, 1, '应匹配上');
+  assert.strictEqual(m[0].version, '27.0.1');
+  assert.strictEqual(m[0].cveCount, 126, 'CVE 数应透传');
+  fsp.rmSync(dir, { recursive: true, force: true });
+});
+
+test('matchWithLocalData: "16.5" 不应误配 "16.51"', () => {
+  const dir = makeDataDir({
+    ios: { name: 'iOS', updates: [{ version: '16.51', build: 'b' }] },
+  });
+  const entries = [{ platform: 'iOS', version: '16.5', title: 't', url: 'u', cveCount: 1 }];
+  assert.strictEqual(matchWithLocalData(entries, dir).length, 0, '前缀相同但位数不同不应匹配');
+  fsp.rmSync(dir, { recursive: true, force: true });
+});
+
+test('matchWithLocalData: 平台有多条更新时遍历全部，不只看第一条', () => {
+  const dir = makeDataDir({
+    ios: { name: 'iOS', updates: [{ version: '27.1', build: 'a' }, { version: '27.0', build: 'b' }] },
+  });
+  // 公告里只有 27.0，第一条 27.1 匹配不上，应退到第二条
+  const entries = [{ platform: 'iOS', version: '27.0', title: 'iOS 27.0', url: 'u', cveCount: 7 }];
+  const m = matchWithLocalData(entries, dir);
+  assert.strictEqual(m.length, 1);
+  assert.strictEqual(m[0].version, '27.0', '应匹配到第二条而不是放弃');
+  fsp.rmSync(dir, { recursive: true, force: true });
+});
