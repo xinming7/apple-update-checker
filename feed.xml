@@ -5,7 +5,7 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-10-16T15:41:47.067Z</updated>
+  <updated>2026-10-16T20:11:17.202Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
@@ -73,8 +73,8 @@
     <title>iOS 27.2 Beta 4</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-10-16:iOS-beta-27.2</id>
-    <published>2026-10-16T15:41:47.067Z</published>
-    <updated>2026-10-16T15:41:47.067Z</updated>
+    <published>2026-10-16T20:11:17.202Z</published>
+    <updated>2026-10-16T20:11:17.202Z</updated>
     <summary>iOS 27.2 Beta 4</summary>
     <content type="html"><![CDATA[<p><strong>iOS</strong> 27.2 Beta 4</p><p>类型: Beta 版本</p>]]></content>
     <category term="iOS" label="iOS"/>
@@ -83,8 +83,8 @@
     <title>macOS 27.2 Beta 4</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-10-16:macOS-beta-27.2</id>
-    <published>2026-10-16T15:41:47.067Z</published>
-    <updated>2026-10-16T15:41:47.067Z</updated>
+    <published>2026-10-16T20:11:17.202Z</published>
+    <updated>2026-10-16T20:11:17.202Z</updated>
     <summary>macOS 27.2 Beta 4</summary>
     <content type="html"><![CDATA[<p><strong>macOS</strong> 27.2 Beta 4</p><p>类型: Beta 版本</p>]]></content>
     <category term="macOS" label="macOS"/>
@@ -93,8 +93,8 @@
     <title>watchOS 27.2 Beta 4</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-10-16:watchOS-beta-27.2</id>
-    <published>2026-10-16T15:41:47.067Z</published>
-    <updated>2026-10-16T15:41:47.067Z</updated>
+    <published>2026-10-16T20:11:17.202Z</published>
+    <updated>2026-10-16T20:11:17.202Z</updated>
     <summary>watchOS 27.2 Beta 4</summary>
     <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.2 Beta 4</p><p>类型: Beta 版本</p>]]></content>
     <category term="watchOS" label="watchOS"/>
@@ -103,8 +103,8 @@
     <title>tvOS 27.2 Beta 3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-10-16:tvOS-beta-27.2</id>
-    <published>2026-10-16T15:41:47.067Z</published>
-    <updated>2026-10-16T15:41:47.067Z</updated>
+    <published>2026-10-16T20:11:17.202Z</published>
+    <updated>2026-10-16T20:11:17.202Z</updated>
     <summary>tvOS 27.2 Beta 3</summary>
     <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.2 Beta 3</p><p>类型: Beta 版本</p>]]></content>
     <category term="tvOS" label="tvOS"/>
@@ -113,8 +113,8 @@
     <title>visionOS 27.2 Beta 4</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-10-16:visionOS-beta-27.2</id>
-    <published>2026-10-16T15:41:47.067Z</published>
-    <updated>2026-10-16T15:41:47.067Z</updated>
+    <published>2026-10-16T20:11:17.202Z</published>
+    <updated>2026-10-16T20:11:17.202Z</updated>
     <summary>visionOS 27.2 Beta 4</summary>
     <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.2 Beta 4</p><p>类型: Beta 版本</p>]]></content>
     <category term="visionOS" label="visionOS"/>
