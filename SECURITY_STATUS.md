@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/10/20 05:49:00
+> 最后扫描: 2026/10/20 10:26:05
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
@@ -8,11 +8,11 @@
 
 | 平台 | 版本 | CVE 数量 | 安全公告 |
 |------|------|----------|----------|
-| iOS | 27.1 | 126 | [查看](https://support.apple.com/en-us/149034) |
-| macOS | 27.0.1 | 210 | [查看](https://support.apple.com/en-us/149035) |
-| watchOS | 27.0.1 | 93 | [查看](https://support.apple.com/en-us/149037) |
-| tvOS | 27.0 | 89 | [查看](https://support.apple.com/en-us/149036) |
-| visionOS | 27.0.1 | 124 | [查看](https://support.apple.com/en-us/149038) |
+| iOS | 27.1 | 145 | [查看](https://support.apple.com/en-us/149034) |
+| macOS | 27.0.1 | 242 | [查看](https://support.apple.com/en-us/149035) |
+| watchOS | 27.0.1 | 102 | [查看](https://support.apple.com/en-us/149037) |
+| tvOS | 27.0 | 97 | [查看](https://support.apple.com/en-us/149036) |
+| visionOS | 27.0.1 | 138 | [查看](https://support.apple.com/en-us/149038) |
 
 ## 📋 最近安全公告详情
 

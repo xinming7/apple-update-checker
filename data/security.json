@@ -1,5 +1,5 @@
 {
-  "lastScanned": "2026-10-19T21:49:00.452Z",
+  "lastScanned": "2026-10-20T02:26:05.107Z",
   "totalEntries": 259,
   "recentDetails": [
     {
@@ -52,7 +52,7 @@
       "build": "24A94425",
       "securityUrl": "https://support.apple.com/en-us/149034",
       "securityTitle": "iOS 27 and iPadOS 27",
-      "cveCount": 126
+      "cveCount": 145
     },
     {
       "platform": "macOS",
@@ -60,7 +60,7 @@
       "build": "26A5434",
       "securityUrl": "https://support.apple.com/en-us/149035",
       "securityTitle": "macOS Golden Gate 27",
-      "cveCount": 210
+      "cveCount": 242
     },
     {
       "platform": "watchOS",
@@ -68,7 +68,7 @@
       "build": "24R6365",
       "securityUrl": "https://support.apple.com/en-us/149037",
       "securityTitle": "watchOS 27",
-      "cveCount": 93
+      "cveCount": 102
     },
     {
       "platform": "tvOS",
@@ -76,7 +76,7 @@
       "build": "24J6361",
       "securityUrl": "https://support.apple.com/en-us/149036",
       "securityTitle": "tvOS 27",
-      "cveCount": 89
+      "cveCount": 97
     },
     {
       "platform": "visionOS",
@@ -84,7 +84,7 @@
       "build": "24M6372",
       "securityUrl": "https://support.apple.com/en-us/149038",
       "securityTitle": "visionOS 27",
-      "cveCount": 124
+      "cveCount": 138
     }
   ],
   "entries": [
@@ -118,7 +118,7 @@
       "version": "27",
       "date": "14 Sep 2026",
       "url": "https://support.apple.com/en-us/149034",
-      "cveCount": 126
+      "cveCount": 145
     },
     {
       "title": "iOS 26.7 and iPadOS 26.7",
@@ -134,7 +134,7 @@
       "version": "27",
       "date": "14 Sep 2026",
       "url": "https://support.apple.com/en-us/149035",
-      "cveCount": 210
+      "cveCount": 242
     },
     {
       "title": "macOS Tahoe 26.7",
@@ -158,7 +158,7 @@
       "version": "27",
       "date": "14 Sep 2026",
       "url": "https://support.apple.com/en-us/149036",
-      "cveCount": 89
+      "cveCount": 97
     },
     {
       "title": "watchOS 27",
@@ -166,7 +166,7 @@
       "version": "27",
       "date": "14 Sep 2026",
       "url": "https://support.apple.com/en-us/149037",
-      "cveCount": 93
+      "cveCount": 102
     },
     {
       "title": "visionOS 27",
@@ -174,7 +174,7 @@
       "version": "27",
       "date": "14 Sep 2026",
       "url": "https://support.apple.com/en-us/149038",
-      "cveCount": 124
+      "cveCount": 138
     },
     {
       "title": "Safari 27",
