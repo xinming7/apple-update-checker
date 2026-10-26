@@ -1,31 +1,27 @@
 {
-  "lastChecked": "2026-10-26T17:47:55.258Z",
+  "lastChecked": "2026-10-26T22:00:39.099Z",
   "platforms": {
     "ios": {
       "name": "iOS",
       "updates": [
         {
           "platform": "iOS",
-          "version": "27.1",
-          "build": "24A95425",
-          "postingDate": "2026-10-22",
-          "title": "iOS 27.1",
+          "version": "27.2",
+          "build": "24B92020",
+          "postingDate": "2026-10-26",
+          "title": "iOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-23T02:20:04.354Z"
-        },
-        {
-          "platform": "iOS",
-          "version": "27.0.1",
-          "build": "24A9446",
-          "postingDate": "2026-10-22",
-          "title": "iOS 27.0.1",
-          "_updateType": "minor",
-          "_firmwareUrls": {},
-          "firstSeen": "2026-10-07T12:33:16.136Z"
+          "firstSeen": "2026-10-26T22:00:39.099Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24B92020",
+          "postingDate": "2026-10-26",
+          "firstSeen": "2026-10-26T22:00:39.099Z"
+        },
         {
           "version": "27.1",
           "build": "24A95425",
@@ -51,16 +47,22 @@
       "updates": [
         {
           "platform": "macOS",
-          "version": "27.0.1",
-          "build": "26A5434",
-          "postingDate": "2026-09-28",
-          "title": "macOS 27.0.1",
+          "version": "27.2",
+          "build": "26B123",
+          "postingDate": "2026-10-26",
+          "title": "macOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-07T12:33:16.136Z"
+          "firstSeen": "2026-10-26T22:00:39.099Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "26B123",
+          "postingDate": "2026-10-26",
+          "firstSeen": "2026-10-26T22:00:39.099Z"
+        },
         {
           "version": "27.0.1",
           "build": "26A5434",
@@ -74,16 +76,22 @@
       "updates": [
         {
           "platform": "watchOS",
-          "version": "27.0.1",
-          "build": "24R6365",
-          "postingDate": "2026-09-28",
-          "title": "watchOS 27.0.1",
+          "version": "27.2",
+          "build": "24S6118",
+          "postingDate": "2026-10-26",
+          "title": "watchOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-07T12:33:16.136Z"
+          "firstSeen": "2026-10-26T22:00:39.099Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24S6118",
+          "postingDate": "2026-10-26",
+          "firstSeen": "2026-10-26T22:00:39.099Z"
+        },
         {
           "version": "27.0.1",
           "build": "24R6365",
@@ -97,16 +105,22 @@
       "updates": [
         {
           "platform": "tvOS",
-          "version": "27.0",
-          "build": "24J6361",
-          "postingDate": "2026-10-05",
-          "title": "tvOS 27.0",
-          "_updateType": "major",
+          "version": "27.2",
+          "build": "24K6122",
+          "postingDate": "2026-10-26",
+          "title": "tvOS 27.2",
+          "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-07T12:33:16.136Z"
+          "firstSeen": "2026-10-26T22:00:39.099Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24K6122",
+          "postingDate": "2026-10-26",
+          "firstSeen": "2026-10-26T22:00:39.099Z"
+        },
         {
           "version": "27.0",
           "build": "24J6361",
@@ -120,16 +134,22 @@
       "updates": [
         {
           "platform": "visionOS",
-          "version": "27.0.1",
-          "build": "24M6372",
-          "postingDate": "2026-10-05",
-          "title": "visionOS 27.0.1",
+          "version": "27.2",
+          "build": "24N6120",
+          "postingDate": "2026-10-26",
+          "title": "visionOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-07T12:33:16.136Z"
+          "firstSeen": "2026-10-26T22:00:39.099Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24N6120",
+          "postingDate": "2026-10-26",
+          "firstSeen": "2026-10-26T22:00:39.099Z"
+        },
         {
           "version": "27.0.1",
           "build": "24M6372",
@@ -141,23 +161,40 @@
   },
   "_intervalStats": {
     "ios": {
-      "avgDays": 10,
-      "daysSinceLast": 4,
+      "avgDays": 7,
+      "daysSinceLast": 0,
       "history": [
+        4,
         10
       ]
     },
     "macos": {
-      "daysSinceLast": 28
+      "avgDays": 28,
+      "daysSinceLast": 0,
+      "history": [
+        28
+      ]
     },
     "watchos": {
-      "daysSinceLast": 28
+      "avgDays": 28,
+      "daysSinceLast": 0,
+      "history": [
+        28
+      ]
     },
     "tvos": {
-      "daysSinceLast": 21
+      "avgDays": 21,
+      "daysSinceLast": 0,
+      "history": [
+        21
+      ]
     },
     "visionos": {
-      "daysSinceLast": 21
+      "avgDays": 21,
+      "daysSinceLast": 0,
+      "history": [
+        21
+      ]
     }
   }
 }
