@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-28T17:32:25.591Z",
+  "lastChecked": "2026-10-28T21:57:46.209Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -8,7 +8,7 @@
           "platform": "iOS",
           "version": "27.2",
           "build": "24B92020",
-          "postingDate": "2026-10-26",
+          "postingDate": "2026-10-28",
           "title": "iOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
