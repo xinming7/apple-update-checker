@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/10/30 01:43:31
+> 最后扫描: 2026/10/30 06:09:00
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
@@ -70,7 +70,7 @@
 - **CVE 数量**: 3
 - **详情**: [https://support.apple.com/en-us/149225](https://support.apple.com/en-us/149225)
 
-**摘要**: Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generationAir 4th generation and later, iPad 9th generation and later, and iPad mini 6th generation and later
+**摘要**: Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generation
 
 **CVE 列表**:
 - CVE-2026-65339
