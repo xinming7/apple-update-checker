@@ -1,7 +1,22 @@
 {
-  "lastScanned": "2026-10-29T22:09:00.530Z",
-  "totalEntries": 269,
+  "lastScanned": "2026-10-30T03:17:43.622Z",
+  "totalEntries": 270,
   "recentDetails": [
+    {
+      "title": "Xcode 27.2",
+      "platform": "Xcode",
+      "version": "27.2",
+      "date": "29 Oct 2026",
+      "url": "https://support.apple.com/en-us/149589",
+      "cveCount": 2,
+      "cves": [
+        "CVE-2026-112605",
+        "CVE-2026-112602"
+      ],
+      "descriptions": [],
+      "summary": "Available for: macOS Tahoe 26.6 and later",
+      "detailDate": "October 29, 2026"
+    },
     {
       "title": "iOS 27.2 and iPadOS 27.2",
       "platform": "iOS",
@@ -127,22 +142,6 @@
       "descriptions": [],
       "summary": "Available for: iPhone 11 and later, iPad Pro 12.9-inch 3rd generation and later, iPad Pro 11-inch 1st generation and later, iPad Air 3rd generation and later, iPad 8th generation and later, and iPad mini 5th generation and later",
       "detailDate": "October 26, 2026"
-    },
-    {
-      "title": "iOS 18.7.11 and iPadOS 18.7.11",
-      "platform": "iOS",
-      "version": "18.7.11",
-      "date": "26 Oct 2026",
-      "url": "https://support.apple.com/en-us/149225",
-      "cveCount": 3,
-      "cves": [
-        "CVE-2026-65339",
-        "CVE-2026-86950",
-        "CVE-2026-86990"
-      ],
-      "descriptions": [],
-      "summary": "Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generation",
-      "detailDate": "October 26, 2026"
     }
   ],
   "localMatches": [
@@ -189,6 +188,14 @@
   ],
   "entries": [
     {
+      "title": "Xcode 27.2",
+      "platform": "Xcode",
+      "version": "27.2",
+      "date": "29 Oct 2026",
+      "url": "https://support.apple.com/en-us/149589",
+      "cveCount": 2
+    },
+    {
       "title": "iOS 27.2 and iPadOS 27.2",
       "platform": "iOS",
       "version": "27.2",
@@ -210,7 +217,7 @@
       "version": "18.7.11",
       "date": "26 Oct 2026",
       "url": "https://support.apple.com/en-us/149225",
-      "cveCount": 3
+      "cveCount": 0
     },
     {
       "title": "macOS Golden Gate 27.2",

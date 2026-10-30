@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/10/30 06:09:00
+> 最后扫描: 2026/10/30 11:17:43
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
@@ -15,6 +15,20 @@
 | visionOS | 27.2 | 125 | [查看](https://support.apple.com/en-us/149526) |
 
 ## 📋 最近安全公告详情
+
+### Xcode 27.2
+
+- **平台**: Xcode
+- **版本**: 27.2
+- **发布日期**: 29 Oct 2026
+- **CVE 数量**: 2
+- **详情**: [https://support.apple.com/en-us/149589](https://support.apple.com/en-us/149589)
+
+**摘要**: Available for: macOS Tahoe 26.6 and later
+
+**CVE 列表**:
+- CVE-2026-112605
+- CVE-2026-112602
 
 ### iOS 27.2 and iPadOS 27.2
 
@@ -62,24 +76,9 @@
 - CVE-2026-112546
 - ... 还有 40 个
 
-### iOS 18.7.11 and iPadOS 18.7.11
-
-- **平台**: iOS
-- **版本**: 18.7.11
-- **发布日期**: 26 Oct 2026
-- **CVE 数量**: 3
-- **详情**: [https://support.apple.com/en-us/149225](https://support.apple.com/en-us/149225)
-
-**摘要**: Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generation
-
-**CVE 列表**:
-- CVE-2026-65339
-- CVE-2026-86950
-- CVE-2026-86990
-
 ## 📚 完整安全公告索引
 
-共 269 条记录
+共 270 条记录
 
 ---
 *此文件由 GitHub Actions 自动更新*
