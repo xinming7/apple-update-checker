@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-10-30T17:22:50.721Z",
+  "lastChecked": "2026-10-30T21:45:24.898Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -7,15 +7,21 @@
         {
           "platform": "iOS",
           "version": "27.2",
-          "build": "24B92020",
-          "postingDate": "2026-10-29",
+          "build": "24V514",
+          "postingDate": "2026-10-30",
           "title": "iOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-26T22:00:39.099Z"
+          "firstSeen": "2026-10-30T21:45:24.898Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24V514",
+          "postingDate": "2026-10-30",
+          "firstSeen": "2026-10-30T21:45:24.898Z"
+        },
         {
           "version": "27.2",
           "build": "24B92020",
@@ -161,9 +167,10 @@
   },
   "_intervalStats": {
     "ios": {
-      "avgDays": 7,
-      "daysSinceLast": 4,
+      "avgDays": 6,
+      "daysSinceLast": 0,
       "history": [
+        4,
         4,
         10
       ]
