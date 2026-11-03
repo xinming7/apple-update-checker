@@ -1,5 +1,5 @@
 {
-  "lastScanned": "2026-11-02T14:01:42.456Z",
+  "lastScanned": "2026-11-03T00:08:58.972Z",
   "totalEntries": 270,
   "recentDetails": [
     {
@@ -172,7 +172,7 @@
     {
       "platform": "tvOS",
       "version": "27.2",
-      "build": "24K6122",
+      "build": "24K6154",
       "securityUrl": "https://support.apple.com/en-us/149524",
       "securityTitle": "tvOS 27.2",
       "cveCount": 72

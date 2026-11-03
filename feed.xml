@@ -5,7 +5,7 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-11-02T14:01:41.503Z</updated>
+  <updated>2026-11-03T00:08:56.571Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
@@ -40,13 +40,13 @@
     <category term="watchOS" label="watchOS"/>
   </entry>
   <entry>
-    <title>tvOS 27.2 (24K6122)</title>
+    <title>tvOS 27.2 (24K6154)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-10-26:tvOS-27.2-24K6122</id>
-    <published>2026-10-26T00:00:00.000Z</published>
-    <updated>2026-10-26T00:00:00.000Z</updated>
+    <id>tag:apple-update-checker,2026-11-02:tvOS-27.2-24K6154</id>
+    <published>2026-11-02T00:00:00.000Z</published>
+    <updated>2026-11-02T00:00:00.000Z</updated>
     <summary>tvOS 27.2 更新</summary>
-    <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.2 (24K6122)</p><ul><li>发布日期: 2026/10/26</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.2 (24K6154)</p><ul><li>发布日期: 2026/11/2</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="tvOS" label="tvOS"/>
   </entry>
   <entry>

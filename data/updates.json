@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-02T14:01:41.503Z",
+  "lastChecked": "2026-11-03T00:08:56.571Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -112,15 +112,21 @@
         {
           "platform": "tvOS",
           "version": "27.2",
-          "build": "24K6122",
-          "postingDate": "2026-10-26",
+          "build": "24K6154",
+          "postingDate": "2026-11-02",
           "title": "tvOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-26T22:00:39.099Z"
+          "firstSeen": "2026-11-03T00:08:56.571Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "24K6154",
+          "postingDate": "2026-11-02",
+          "firstSeen": "2026-11-03T00:08:56.571Z"
+        },
         {
           "version": "27.2",
           "build": "24K6122",
@@ -168,7 +174,7 @@
   "_intervalStats": {
     "ios": {
       "avgDays": 6,
-      "daysSinceLast": 3,
+      "daysSinceLast": 4,
       "history": [
         4,
         4,
@@ -177,28 +183,29 @@
     },
     "macos": {
       "avgDays": 28,
-      "daysSinceLast": 7,
+      "daysSinceLast": 8,
       "history": [
         28
       ]
     },
     "watchos": {
       "avgDays": 28,
-      "daysSinceLast": 7,
+      "daysSinceLast": 8,
       "history": [
         28
       ]
     },
     "tvos": {
-      "avgDays": 21,
-      "daysSinceLast": 7,
+      "avgDays": 14,
+      "daysSinceLast": 1,
       "history": [
+        7,
         21
       ]
     },
     "visionos": {
       "avgDays": 21,
-      "daysSinceLast": 7,
+      "daysSinceLast": 8,
       "history": [
         21
       ]
