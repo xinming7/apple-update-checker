@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-03T13:10:01.967Z",
+  "lastChecked": "2026-11-03T22:39:16.883Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -171,6 +171,33 @@
       ]
     }
   },
+  "betaUpdates": [
+    {
+      "platform": "iOS",
+      "version": "27.3",
+      "betaNumber": 0
+    },
+    {
+      "platform": "macOS",
+      "version": "27.3",
+      "betaNumber": 0
+    },
+    {
+      "platform": "watchOS",
+      "version": "27.3",
+      "betaNumber": 0
+    },
+    {
+      "platform": "tvOS",
+      "version": "27.3",
+      "betaNumber": 0
+    },
+    {
+      "platform": "visionOS",
+      "version": "27.3",
+      "betaNumber": 0
+    }
+  ],
   "_intervalStats": {
     "ios": {
       "avgDays": 6,
