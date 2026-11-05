@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-05T13:39:36.356Z",
+  "lastChecked": "2026-11-05T22:58:57.216Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -54,15 +54,21 @@
         {
           "platform": "macOS",
           "version": "27.2",
-          "build": "26B123",
-          "postingDate": "2026-10-26",
+          "build": "26B8125",
+          "postingDate": "2026-11-05",
           "title": "macOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-26T22:00:39.099Z"
+          "firstSeen": "2026-11-05T22:58:57.216Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2",
+          "build": "26B8125",
+          "postingDate": "2026-11-05",
+          "firstSeen": "2026-11-05T22:58:57.216Z"
+        },
         {
           "version": "27.2",
           "build": "26B123",
@@ -209,9 +215,10 @@
       ]
     },
     "macos": {
-      "avgDays": 28,
-      "daysSinceLast": 10,
+      "avgDays": 19,
+      "daysSinceLast": 0,
       "history": [
+        10,
         28
       ]
     },

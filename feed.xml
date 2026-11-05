@@ -5,7 +5,7 @@
   <link href="https://github.com/xinming7/apple-update-checker/blob/main/feed.xml" rel="self" type="application/atom+xml"/>
   <link href="https://github.com/xinming7/apple-update-checker" rel="alternate" type="text/html"/>
   <id>https://github.com/xinming7/apple-update-checker</id>
-  <updated>2026-11-05T13:39:36.356Z</updated>
+  <updated>2026-11-05T22:58:57.216Z</updated>
   <author>
     <name>Apple Update Checker</name>
   </author>
@@ -20,13 +20,13 @@
     <category term="iOS" label="iOS"/>
   </entry>
   <entry>
-    <title>macOS 27.2 (26B123)</title>
+    <title>macOS 27.2 (26B8125)</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
-    <id>tag:apple-update-checker,2026-10-26:macOS-27.2-26B123</id>
-    <published>2026-10-26T00:00:00.000Z</published>
-    <updated>2026-10-26T00:00:00.000Z</updated>
+    <id>tag:apple-update-checker,2026-11-05:macOS-27.2-26B8125</id>
+    <published>2026-11-05T00:00:00.000Z</published>
+    <updated>2026-11-05T00:00:00.000Z</updated>
     <summary>macOS 27.2 更新</summary>
-    <content type="html"><![CDATA[<p><strong>macOS</strong> 27.2 (26B123)</p><ul><li>发布日期: 2026/10/26</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
+    <content type="html"><![CDATA[<p><strong>macOS</strong> 27.2 (26B8125)</p><ul><li>发布日期: 2026/11/5</li><li>类型: 小版本更新</li></ul><p><a href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md">查看详细信息</a></p>]]></content>
     <category term="macOS" label="macOS"/>
   </entry>
   <entry>
@@ -63,8 +63,8 @@
     <title>iOS 27.3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-11-05:iOS-beta-27.3</id>
-    <published>2026-11-05T13:39:36.356Z</published>
-    <updated>2026-11-05T13:39:36.356Z</updated>
+    <published>2026-11-05T22:58:57.216Z</published>
+    <updated>2026-11-05T22:58:57.216Z</updated>
     <summary>iOS 27.3</summary>
     <content type="html"><![CDATA[<p><strong>iOS</strong> 27.3</p><p>类型: Beta 版本</p>]]></content>
     <category term="iOS" label="iOS"/>
@@ -73,8 +73,8 @@
     <title>macOS 27.3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-11-05:macOS-beta-27.3</id>
-    <published>2026-11-05T13:39:36.356Z</published>
-    <updated>2026-11-05T13:39:36.356Z</updated>
+    <published>2026-11-05T22:58:57.216Z</published>
+    <updated>2026-11-05T22:58:57.216Z</updated>
     <summary>macOS 27.3</summary>
     <content type="html"><![CDATA[<p><strong>macOS</strong> 27.3</p><p>类型: Beta 版本</p>]]></content>
     <category term="macOS" label="macOS"/>
@@ -83,8 +83,8 @@
     <title>watchOS 27.3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-11-05:watchOS-beta-27.3</id>
-    <published>2026-11-05T13:39:36.356Z</published>
-    <updated>2026-11-05T13:39:36.356Z</updated>
+    <published>2026-11-05T22:58:57.216Z</published>
+    <updated>2026-11-05T22:58:57.216Z</updated>
     <summary>watchOS 27.3</summary>
     <content type="html"><![CDATA[<p><strong>watchOS</strong> 27.3</p><p>类型: Beta 版本</p>]]></content>
     <category term="watchOS" label="watchOS"/>
@@ -93,8 +93,8 @@
     <title>tvOS 27.3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-11-05:tvOS-beta-27.3</id>
-    <published>2026-11-05T13:39:36.356Z</published>
-    <updated>2026-11-05T13:39:36.356Z</updated>
+    <published>2026-11-05T22:58:57.216Z</published>
+    <updated>2026-11-05T22:58:57.216Z</updated>
     <summary>tvOS 27.3</summary>
     <content type="html"><![CDATA[<p><strong>tvOS</strong> 27.3</p><p>类型: Beta 版本</p>]]></content>
     <category term="tvOS" label="tvOS"/>
@@ -103,8 +103,8 @@
     <title>visionOS 27.3</title>
     <link href="https://github.com/xinming7/apple-update-checker/blob/main/UPDATE_STATUS.md"/>
     <id>tag:apple-update-checker,2026-11-05:visionOS-beta-27.3</id>
-    <published>2026-11-05T13:39:36.356Z</published>
-    <updated>2026-11-05T13:39:36.356Z</updated>
+    <published>2026-11-05T22:58:57.216Z</published>
+    <updated>2026-11-05T22:58:57.216Z</updated>
     <summary>visionOS 27.3</summary>
     <content type="html"><![CDATA[<p><strong>visionOS</strong> 27.3</p><p>类型: Beta 版本</p>]]></content>
     <category term="visionOS" label="visionOS"/>

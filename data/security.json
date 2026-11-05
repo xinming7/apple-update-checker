@@ -1,5 +1,5 @@
 {
-  "lastScanned": "2026-11-05T13:39:36.668Z",
+  "lastScanned": "2026-11-05T22:58:58.870Z",
   "totalEntries": 270,
   "recentDetails": [
     {
@@ -156,7 +156,7 @@
     {
       "platform": "macOS",
       "version": "27.2",
-      "build": "26B123",
+      "build": "26B8125",
       "securityUrl": "https://support.apple.com/en-us/149521",
       "securityTitle": "macOS Golden Gate 27.2",
       "cveCount": 263
