@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/11/9 05:26:55
+> 最后扫描: 2026/11/9 11:25:18
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
