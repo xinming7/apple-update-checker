@@ -1,9 +1,19 @@
 {
-  "lastChecked": "2026-11-09T14:34:58.703Z",
+  "lastChecked": "2026-11-10T00:56:24.948Z",
   "platforms": {
     "ios": {
       "name": "iOS",
       "updates": [
+        {
+          "platform": "iOS",
+          "version": "27.2.1",
+          "build": "24B92034",
+          "postingDate": "2026-11-09",
+          "title": "iOS 27.2.1",
+          "_updateType": "minor",
+          "_firmwareUrls": {},
+          "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
         {
           "platform": "iOS",
           "version": "27.2",
@@ -16,6 +26,12 @@
         }
       ],
       "_history": [
+        {
+          "version": "27.2.1",
+          "build": "24B92034",
+          "postingDate": "2026-11-09",
+          "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
         {
           "version": "27.2",
           "build": "24V514",
@@ -53,16 +69,22 @@
       "updates": [
         {
           "platform": "macOS",
-          "version": "27.2",
-          "build": "26B8125",
-          "postingDate": "2026-11-05",
-          "title": "macOS 27.2",
+          "version": "27.2.1",
+          "build": "26B8132",
+          "postingDate": "2026-11-09",
+          "title": "macOS 27.2.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-11-05T22:58:57.216Z"
+          "firstSeen": "2026-11-10T00:56:24.948Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2.1",
+          "build": "26B8132",
+          "postingDate": "2026-11-09",
+          "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
         {
           "version": "27.2",
           "build": "26B8125",
@@ -88,16 +110,22 @@
       "updates": [
         {
           "platform": "watchOS",
-          "version": "27.2",
-          "build": "24S6118",
-          "postingDate": "2026-10-26",
-          "title": "watchOS 27.2",
+          "version": "27.2.1",
+          "build": "24S6132",
+          "postingDate": "2026-11-09",
+          "title": "watchOS 27.2.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-26T22:00:39.099Z"
+          "firstSeen": "2026-11-10T00:56:24.948Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2.1",
+          "build": "24S6132",
+          "postingDate": "2026-11-09",
+          "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
         {
           "version": "27.2",
           "build": "24S6118",
@@ -152,16 +180,22 @@
       "updates": [
         {
           "platform": "visionOS",
-          "version": "27.2",
-          "build": "24N6120",
-          "postingDate": "2026-10-26",
-          "title": "visionOS 27.2",
+          "version": "27.2.1",
+          "build": "24N6124",
+          "postingDate": "2026-11-09",
+          "title": "visionOS 27.2.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-26T22:00:39.099Z"
+          "firstSeen": "2026-11-10T00:56:24.948Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2.1",
+          "build": "24N6124",
+          "postingDate": "2026-11-09",
+          "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
         {
           "version": "27.2",
           "build": "24N6120",
@@ -206,41 +240,45 @@
   ],
   "_intervalStats": {
     "ios": {
-      "avgDays": 6,
-      "daysSinceLast": 10,
+      "avgDays": 7,
+      "daysSinceLast": 1,
       "history": [
+        10,
         4,
         4,
         10
       ]
     },
     "macos": {
-      "avgDays": 19,
-      "daysSinceLast": 4,
+      "avgDays": 14,
+      "daysSinceLast": 1,
       "history": [
+        4,
         10,
         28
       ]
     },
     "watchos": {
-      "avgDays": 28,
-      "daysSinceLast": 14,
+      "avgDays": 21,
+      "daysSinceLast": 1,
       "history": [
+        14,
         28
       ]
     },
     "tvos": {
       "avgDays": 14,
-      "daysSinceLast": 7,
+      "daysSinceLast": 8,
       "history": [
         7,
         21
       ]
     },
     "visionos": {
-      "avgDays": 21,
-      "daysSinceLast": 14,
+      "avgDays": 18,
+      "daysSinceLast": 1,
       "history": [
+        14,
         21
       ]
     }
