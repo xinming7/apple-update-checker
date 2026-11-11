@@ -1,9 +1,10 @@
 # apple-update-checker
 
 ## 这是什么
-每天抓 Apple 各平台（iOS / macOS / watchOS / tvOS / visionOS）的系统更新与安全公告，把增量变成可订阅的产物：
+定期抓 Apple 各平台（iOS / macOS / watchOS / tvOS / visionOS）的系统更新与安全公告，把增量变成可订阅的产物：
 GitHub Issue + Telegram 推送、`UPDATE_STATUS.md`、`SECURITY_STATUS.md`、Atom `feed.xml`，同时把新版本上报给
-update-hub，让所有订阅源汇到一个仪表盘。自用项目，当前在线上运行（GitHub Actions 每日自动执行并回写仓库）。
+update-hub，让所有订阅源汇到一个仪表盘。自用项目，当前在线上运行（GitHub Actions 名义每 6 小时执行一次并回写仓库，
+实际有 5~7 小时漂移，见下方「关于 cron 时间」）。
 入口文件：`scripts/check-updates.js`。
 
 ## 技术栈
@@ -14,11 +15,12 @@ Node.js 22 + 纯 JavaScript（CommonJS），零运行时依赖（`package.json` 
 
 ## 常用命令
 - 安装依赖：零依赖，无需安装
-- 本地开发：`npm run check`（= `node scripts/check-updates.js`；需 `PLATFORMS`、`TELEGRAM_BOT_TOKEN`、
-  `TELEGRAM_CHAT_ID`、`UPDATE_HUB_URL`、`UPDATE_HUB_TOKEN`、`REPO_URL` 环境变量）
-- 测试：`npm test`（= `node --test test/logic.test.js`，27 个用例，用 Node 内置 test runner，零依赖）
+- 本地开发：`npm run check`（= `node scripts/check-updates.js`）。以下环境变量均为可选：
+  `PLATFORMS` 过滤平台；`TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` 不配则跳过 Telegram；
+  `UPDATE_HUB_URL` / `UPDATE_HUB_TOKEN` 不配则跳过上报；`REPO_URL` 影响生成产物里的链接
+- 测试：`npm test`（= `node --test test/logic.test.js`，42 个用例，用 Node 内置 test runner，零依赖）
 - 部署：（无）——本项目没有部署动作，见下
-- 其它真实脚本：`npm run security`、`npm run rss`、`npm run digest`
+- 其它真实脚本：`npm run security`、`npm run rss`、`npm run digest`（`daily-digest` 对应的工作流已手动禁用，见下）
 
 ## 改动流程（用户明确要求）
 **每次改完代码，在 commit / push 之前先告诉用户 `README.md` 要不要更新、具体改哪几行、改成什么，
