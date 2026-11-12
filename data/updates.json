@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-12T14:09:05.934Z",
+  "lastChecked": "2026-11-12T22:56:32.385Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -8,7 +8,7 @@
           "platform": "iOS",
           "version": "27.2.1",
           "build": "24B92034",
-          "postingDate": "2026-11-09",
+          "postingDate": "2026-11-12",
           "title": "iOS 27.2.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
@@ -17,12 +17,12 @@
         {
           "platform": "iOS",
           "version": "27.2",
-          "build": "24V514",
-          "postingDate": "2026-10-30",
+          "build": "24V526",
+          "postingDate": "2026-11-12",
           "title": "iOS 27.2",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-10-30T21:45:24.898Z"
+          "firstSeen": "2026-11-12T22:56:32.385Z"
         }
       ],
       "_history": [
@@ -31,6 +31,12 @@
           "build": "24B92034",
           "postingDate": "2026-11-09",
           "firstSeen": "2026-11-10T00:56:24.948Z"
+        },
+        {
+          "version": "27.2",
+          "build": "24V526",
+          "postingDate": "2026-11-12",
+          "firstSeen": "2026-11-12T22:56:32.385Z"
         },
         {
           "version": "27.2",
@@ -240,9 +246,10 @@
   ],
   "_intervalStats": {
     "ios": {
-      "avgDays": 7,
-      "daysSinceLast": 3,
+      "avgDays": 6,
+      "daysSinceLast": 0,
       "history": [
+        3,
         10,
         4,
         4,

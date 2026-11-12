@@ -1,6 +1,6 @@
 # Apple 安全更新追踪
 
-> 最后扫描: 2026/11/12 22:09:06
+> 最后扫描: 2026/11/13 06:56:34
 
 > 数据来源: [Apple Security Updates](https://support.apple.com/en-us/100100)
 
@@ -15,6 +15,27 @@
 | visionOS | 27.2.1 | 9 | [查看](https://support.apple.com/en-us/149724) |
 
 ## 📋 最近安全公告详情
+
+### HomeView Software Version 27.2
+
+- **平台**: Unknown
+- **版本**: 27.2
+- **发布日期**: 12 Nov 2026
+- **CVE 数量**: 9
+- **详情**: [https://support.apple.com/en-us/149851](https://support.apple.com/en-us/149851)
+
+**摘要**: Available for: Apple HomeView
+
+**CVE 列表**:
+- CVE-2026-113968
+- CVE-2026-113963
+- CVE-2026-113970
+- CVE-2026-111497
+- CVE-2026-113965
+- CVE-2026-113964
+- CVE-2026-113961
+- CVE-2026-113960
+- CVE-2026-113969
 
 ### iOS 27.2.1 and iPadOS 27.2.1
 
@@ -57,27 +78,9 @@
 - CVE-2026-113961
 - CVE-2026-113969
 
-### iOS 18.7.12 and iPadOS 18.7.12
-
-- **平台**: iOS
-- **版本**: 18.7.12
-- **发布日期**: 09 Nov 2026
-- **CVE 数量**: 6
-- **详情**: [https://support.apple.com/en-us/149717](https://support.apple.com/en-us/149717)
-
-**摘要**: Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generation
-
-**CVE 列表**:
-- CVE-2026-113968
-- CVE-2026-113970
-- CVE-2026-113965
-- CVE-2026-113964
-- CVE-2026-113971
-- CVE-2026-113969
-
 ## 📚 完整安全公告索引
 
-共 279 条记录
+共 280 条记录
 
 ---
 *此文件由 GitHub Actions 自动更新*

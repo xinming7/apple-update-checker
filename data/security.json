@@ -1,7 +1,29 @@
 {
-  "lastScanned": "2026-11-12T14:09:06.754Z",
-  "totalEntries": 279,
+  "lastScanned": "2026-11-12T22:56:34.992Z",
+  "totalEntries": 280,
   "recentDetails": [
+    {
+      "title": "HomeView Software Version 27.2",
+      "platform": "Unknown",
+      "version": "27.2",
+      "date": "12 Nov 2026",
+      "url": "https://support.apple.com/en-us/149851",
+      "cveCount": 9,
+      "cves": [
+        "CVE-2026-113968",
+        "CVE-2026-113963",
+        "CVE-2026-113970",
+        "CVE-2026-111497",
+        "CVE-2026-113965",
+        "CVE-2026-113964",
+        "CVE-2026-113961",
+        "CVE-2026-113960",
+        "CVE-2026-113969"
+      ],
+      "descriptions": [],
+      "summary": "Available for: Apple HomeView",
+      "detailDate": "November 12, 2026"
+    },
     {
       "title": "iOS 27.2.1 and iPadOS 27.2.1",
       "platform": "iOS",
@@ -43,25 +65,6 @@
       ],
       "descriptions": [],
       "summary": "Available for: iPhone 11 and later, iPad Pro 12.9-inch 3rd generation and later, iPad Pro 11-inch 1st generation and later, iPad Air 3rd generation and later, iPad 8th generation and later, and iPad mini 5th generation and later",
-      "detailDate": "November 9, 2026"
-    },
-    {
-      "title": "iOS 18.7.12 and iPadOS 18.7.12",
-      "platform": "iOS",
-      "version": "18.7.12",
-      "date": "09 Nov 2026",
-      "url": "https://support.apple.com/en-us/149717",
-      "cveCount": 6,
-      "cves": [
-        "CVE-2026-113968",
-        "CVE-2026-113970",
-        "CVE-2026-113965",
-        "CVE-2026-113964",
-        "CVE-2026-113971",
-        "CVE-2026-113969"
-      ],
-      "descriptions": [],
-      "summary": "Available for: iPhone XS, iPhone XS Max, iPhone XR, iPad 7th generation",
       "detailDate": "November 9, 2026"
     }
   ],
@@ -109,6 +112,14 @@
   ],
   "entries": [
     {
+      "title": "HomeView Software Version 27.2",
+      "platform": "Unknown",
+      "version": "27.2",
+      "date": "12 Nov 2026",
+      "url": "https://support.apple.com/en-us/149851",
+      "cveCount": 9
+    },
+    {
       "title": "iOS 27.2.1 and iPadOS 27.2.1",
       "platform": "iOS",
       "version": "27.2.1",
@@ -130,7 +141,7 @@
       "version": "18.7.12",
       "date": "09 Nov 2026",
       "url": "https://support.apple.com/en-us/149717",
-      "cveCount": 6
+      "cveCount": 0
     },
     {
       "title": "macOS Golden Gate 27.2.1",
