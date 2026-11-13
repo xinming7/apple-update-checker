@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-13T13:33:29.261Z",
+  "lastChecked": "2026-11-13T22:58:52.306Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -151,16 +151,22 @@
       "updates": [
         {
           "platform": "tvOS",
-          "version": "27.2",
-          "build": "24K6154",
-          "postingDate": "2026-11-02",
-          "title": "tvOS 27.2",
+          "version": "27.2.1",
+          "build": "24K6157",
+          "postingDate": "2026-11-13",
+          "title": "tvOS 27.2.1",
           "_updateType": "minor",
           "_firmwareUrls": {},
-          "firstSeen": "2026-11-03T00:08:56.571Z"
+          "firstSeen": "2026-11-13T22:58:52.306Z"
         }
       ],
       "_history": [
+        {
+          "version": "27.2.1",
+          "build": "24K6157",
+          "postingDate": "2026-11-13",
+          "firstSeen": "2026-11-13T22:58:52.306Z"
+        },
         {
           "version": "27.2",
           "build": "24K6154",
@@ -274,9 +280,10 @@
       ]
     },
     "tvos": {
-      "avgDays": 14,
-      "daysSinceLast": 11,
+      "avgDays": 13,
+      "daysSinceLast": 0,
       "history": [
+        11,
         7,
         21
       ]

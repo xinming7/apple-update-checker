@@ -1,7 +1,27 @@
 {
-  "lastScanned": "2026-11-13T13:33:30.460Z",
-  "totalEntries": 280,
+  "lastScanned": "2026-11-13T22:58:54.505Z",
+  "totalEntries": 281,
   "recentDetails": [
+    {
+      "title": "tvOS 27.2.1",
+      "platform": "tvOS",
+      "version": "27.2.1",
+      "date": "13 Nov 2026",
+      "url": "https://support.apple.com/en-us/149721",
+      "cveCount": 7,
+      "cves": [
+        "CVE-2026-113968",
+        "CVE-2026-113963",
+        "CVE-2026-113970",
+        "CVE-2026-111497",
+        "CVE-2026-113965",
+        "CVE-2026-113964",
+        "CVE-2026-113969"
+      ],
+      "descriptions": [],
+      "summary": "Available for: Apple TV 4K 2nd generation and later",
+      "detailDate": "November 13, 2026"
+    },
     {
       "title": "HomeView Software Version 27.2",
       "platform": "Unknown",
@@ -45,27 +65,6 @@
       "descriptions": [],
       "summary": "Available for: iPhone 11 and later, iPad Pro 12.9-inch 4th generation and later, iPad Pro 11-inch 2nd generation and later, iPad Air 4th generation and later, iPad 9th generation and later, and iPad mini 6th generation and later",
       "detailDate": "November 9, 2026"
-    },
-    {
-      "title": "iOS 26.7.3 and iPadOS 26.7.3",
-      "platform": "iOS",
-      "version": "26.7.3",
-      "date": "09 Nov 2026",
-      "url": "https://support.apple.com/en-us/149716",
-      "cveCount": 8,
-      "cves": [
-        "CVE-2026-113968",
-        "CVE-2026-113970",
-        "CVE-2026-111497",
-        "CVE-2026-113965",
-        "CVE-2026-113964",
-        "CVE-2026-113960",
-        "CVE-2026-113961",
-        "CVE-2026-113969"
-      ],
-      "descriptions": [],
-      "summary": "Available for: iPhone 11 and later, iPad Pro 12.9-inch 3rd generation and later, iPad Pro 11-inch 1st generation and later, iPad Air 3rd generation and later, iPad 8th generation and later, and iPad mini 5th generation and later",
-      "detailDate": "November 9, 2026"
     }
   ],
   "localMatches": [
@@ -95,11 +94,11 @@
     },
     {
       "platform": "tvOS",
-      "version": "27.2",
-      "build": "24K6154",
-      "securityUrl": "https://support.apple.com/en-us/149524",
-      "securityTitle": "tvOS 27.2",
-      "cveCount": 72
+      "version": "27.2.1",
+      "build": "24K6157",
+      "securityUrl": "https://support.apple.com/en-us/149721",
+      "securityTitle": "tvOS 27.2.1",
+      "cveCount": 7
     },
     {
       "platform": "visionOS",
@@ -111,6 +110,14 @@
     }
   ],
   "entries": [
+    {
+      "title": "tvOS 27.2.1",
+      "platform": "tvOS",
+      "version": "27.2.1",
+      "date": "13 Nov 2026",
+      "url": "https://support.apple.com/en-us/149721",
+      "cveCount": 7
+    },
     {
       "title": "HomeView Software Version 27.2",
       "platform": "Unknown",
@@ -133,7 +140,7 @@
       "version": "26.7.3",
       "date": "09 Nov 2026",
       "url": "https://support.apple.com/en-us/149716",
-      "cveCount": 8
+      "cveCount": 0
     },
     {
       "title": "iOS 18.7.12 and iPadOS 18.7.12",
@@ -253,7 +260,7 @@
       "version": "27.2",
       "date": "26 Oct 2026",
       "url": "https://support.apple.com/en-us/149524",
-      "cveCount": 72
+      "cveCount": 0
     },
     {
       "title": "watchOS 27.2",
