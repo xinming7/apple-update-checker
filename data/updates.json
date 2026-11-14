@@ -1,5 +1,5 @@
 {
-  "lastChecked": "2026-11-13T22:58:52.306Z",
+  "lastChecked": "2026-11-14T03:52:39.012Z",
   "platforms": {
     "ios": {
       "name": "iOS",
@@ -253,7 +253,7 @@
   "_intervalStats": {
     "ios": {
       "avgDays": 6,
-      "daysSinceLast": 1,
+      "daysSinceLast": 2,
       "history": [
         3,
         10,
@@ -264,7 +264,7 @@
     },
     "macos": {
       "avgDays": 14,
-      "daysSinceLast": 4,
+      "daysSinceLast": 5,
       "history": [
         4,
         10,
@@ -273,7 +273,7 @@
     },
     "watchos": {
       "avgDays": 21,
-      "daysSinceLast": 4,
+      "daysSinceLast": 5,
       "history": [
         14,
         28
@@ -281,7 +281,7 @@
     },
     "tvos": {
       "avgDays": 13,
-      "daysSinceLast": 0,
+      "daysSinceLast": 1,
       "history": [
         11,
         7,
@@ -290,7 +290,7 @@
     },
     "visionos": {
       "avgDays": 18,
-      "daysSinceLast": 4,
+      "daysSinceLast": 5,
       "history": [
         14,
         21
