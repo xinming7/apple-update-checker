@@ -1,5 +1,5 @@
 {
-  "lastScanned": "2026-11-18T14:43:13.887Z",
+  "lastScanned": "2026-11-18T23:40:08.911Z",
   "totalEntries": 281,
   "recentDetails": [
     {
@@ -71,7 +71,7 @@
     {
       "platform": "iOS",
       "version": "27.2.1",
-      "build": "24B92034",
+      "build": "24V553",
       "securityUrl": "https://support.apple.com/en-us/149715",
       "securityTitle": "iOS 27.2.1 and iPadOS 27.2.1",
       "cveCount": 9
